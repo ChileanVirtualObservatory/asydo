@@ -2,7 +2,7 @@
 ﻿ASYDO
 
 
-Astronomical SYntetic Data Observatory
+Astronomical Syntetic Data Observatory
 
 Dependencias:
     * scipy
