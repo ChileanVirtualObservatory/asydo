@@ -1,9 +1,6 @@
 ﻿ASYDO
 
 
-Autores: Nicolas Bravo
-		 Juan Bustamante
-
 Astronomical SYntetic Data Observatory
 
 Participantes:
@@ -14,4 +11,7 @@ Participantes:
 Participantes:
     *Teodoro Hochfärber
     *Renato Sanhueza
+
+    * Nicolas Bravo
+    * Juan Bustamante
 
