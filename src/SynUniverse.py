@@ -21,7 +21,7 @@ CubeSpec = namedtuple('CubeSpec', 'x_center y_center ang_res ang_fov v_center sp
 defaultUniverse = SynConf('default', \
                           {'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500],
                            '9': [602, 720]}, \
-                          {'3': 0.1, '4': 0.12, '6': 0.2, '7': 0.4, '8': 0.8, '9': 1.6}, \
+                          {'3': 0.01, '4': 0.012, '6': 0.02, '7': 0.04, '8': 0.08, '9': 0.16}, \
                           [('default'), ('CO'), ('13CO'), ('HCO+, HC3N, CS, C18O, CH3OH, N2H')], \
                           [[0.1, 2], [20, 60], [5, 20], [1, 10]], \
                           {'13C': 1.0 / 30, '18O': 1.0 / 60, '17O': '1.0/120', '34S': 1.0 / 30, '33S': 1.0 / 120,
@@ -253,8 +253,8 @@ class SynUniverse:
         for src in self.sources:
             log.write('   * Source: ' + src + '\n')
             self.sources[src].emission(log, cube, self.conf.inten_group, self.conf.inten_values)
-        #log.write('   * Adding Noise... \n')
-        #cube.addNoise(self.conf.band_noise) # To uncomment by SS group
+        log.write('   * Adding Noise... \n')
+        cube.addNoise(self.conf.band_noise) # To uncomment by SS group
         cube.saveFits(filename)
         return cube
 
