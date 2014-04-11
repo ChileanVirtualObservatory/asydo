@@ -2,8 +2,6 @@ import sys
 import urllib
 import urllib2
 import requests
-import atpy
-
 
 slap_serv = 'https://find.nrao.edu/splata-slap/slap'
 alma_band_freq = {'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500], '9': [602, 720]}
@@ -32,7 +30,6 @@ def getLines(log, prefix, freqs):
         f = open(location, 'w')
         f.write(votable)
         f.close()
-    print("Termine!")
 
 
 

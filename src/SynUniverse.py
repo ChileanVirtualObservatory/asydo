@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 SynConf = namedtuple('SynUniverse',
-                     'profile band_freq band_noise inten_group inten_values iso_abun base_abun base_CO spl_cons')
+                     'profile band_freq band_noise inten_group inten_values iso_abun base_abun base_CO')
 
 SynStruct = namedtuple('SynStruct', 'code intens spa_form spe_form')
 
@@ -26,8 +26,13 @@ defaultUniverse = SynConf('default', \
                           {'13C': 1.0 / 30, '18O': 1.0 / 60, '17O': '1.0/120', '34S': 1.0 / 30, '33S': 1.0 / 120,
                            '13N': 1.0 / 30, 'D': 1.0 / 30}, \
                           [10 ** -5, 10 ** -6], \
-                          1.0, \
-    {})
+                          1.0)
+
+DEG2ARCSEC = 3600.0
+S_FACTOR = 2.3548200450309493820231386529193992754947713787716410 #sqrt(8*ln2)
+MAX_CHANNELS = 9000
+MAX_BW = 2000000.0 # kHz
+SPEED_OF_LIGHT = 299792458.0
 
 
 class SynCube:
@@ -41,16 +46,12 @@ class SynCube:
                  conf : the SynConf configuration
                  spec	: a CubeSpec specification
             """
-        deg2arcsec = 3600.0
-        ghz2khz = 1000000.0
-        max_channels = 9000
-        max_bw = 2000000.0 # kHz
         self.name = name
         self.spec = spec
         self.conf = conf
         log.write('Generating cube ' + name + '\n')
         log.write('  -> Spatial Center (deg): ra=' + str(spec.x_center) + ' dec=' + str(spec.y_center) + '\n')
-        fact = spec.ang_fov / (deg2arcsec * spec.ang_res)
+        fact = spec.ang_fov / (DEG2ARCSEC* spec.ang_res)
         self.x_border = [spec.x_center - fact / 2, spec.x_center + fact / 2]
         self.y_border = [spec.y_center - fact / 2, spec.y_center + fact / 2]
         self.x_axis = np.linspace(self.x_border[0], self.x_border[1], spec.ang_fov / spec.ang_res)
@@ -60,11 +61,11 @@ class SynCube:
         if spec.y_center > 90 or spec.y_center < -90:
             raise Exception('ERROR: invalid coordinate: dec=' + spec.y_center)
         log.write('  -> FOV (arcsec): ra=' + str(self.x_border) + ' dec=' + str(self.y_border) + '\n')
-        self.v_border = [spec.v_center - spec.spe_bw / (2.0 * ghz2khz), spec.v_center + spec.spe_bw / (2.0 * ghz2khz)]
-        if spec.spe_bw > max_bw:
+        self.v_border = [spec.v_center - spec.spe_bw / (2.0 * 1000000), spec.v_center + spec.spe_bw / (2.0 * 1000000)]
+        if spec.spe_bw > MAX_BW:
             log.write('WARNING: max ALMA bandwidth exceeded\n')
         self.channels = round(spec.spe_bw / spec.spe_res)
-        if self.channels > max_channels:
+        if self.channels > MAX_CHANNELS:
             log.write('WARNING: max ALMA channels exceeded\n')
         self.v_axis = np.linspace(self.v_border[0], self.v_border[1], self.channels)
         log.write('  -> Spectral (GHz): center=' + str(spec.v_center) + ' bandwidth=' + str(self.v_border) + '\n')
@@ -86,14 +87,13 @@ class SynCube:
         """ Frequency window.
                  Given a freq and a fwhm compute returns the range of channels that are affectet
             """
-        ghz2khz = 1000000.0
         factor = 2.0;
         ldiff = freq - self.v_border[0] - factor * fwhm;
         udiff = freq - self.v_border[0] + factor * fwhm;
         l_w = 0
         if (ldiff > 0):
-            l_w = ldiff * ghz2khz / self.spec.spe_res
-        l_u = udiff * ghz2khz / self.spec.spe_res
+            l_w = ldiff * 1000000 / self.spec.spe_res
+        l_u = udiff * 1000000 / self.spec.spe_res
         if l_u > self.channels:
             l_u = channels - 1
         return (int(l_w), int(l_u))
@@ -184,7 +184,6 @@ class SynSource:
         return res
 
     def emission(self, log, cube, inten_group, inten_values):
-        sigma_factor = 2.3548200450309493820231386529193992754947713787716410 #sqrt(8*ln2)
         log.write('Loading visible lines in band ' + cube.band + ' (rad_vel=' + str(self.rad_vel) + ')\n')
         lines = self.loadLines(cube.band, cube.v_border[0], cube.v_border[1], self.rad_vel)
         for struct in self.structs:
@@ -215,7 +214,7 @@ class SynSource:
                     freq = mlin[i]['frequency']
                     window = cube.freqWindow(freq / 1000.0, fwhm)
                     log.write('Window:' + str(window) + '\n')
-                    sigma = fwhm / sigma_factor
+                    sigma = fwhm / S_FACTOR 
                     for idx in range(window[0], window[1]):
                         cube.data[:, :, idx] += tcub * temp * exp(
                             (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
@@ -223,12 +222,13 @@ class SynSource:
                     #print temp,cube.v_axis,freq/1000.0,sigma,shape
 
     def loadLines(self, band, v_init, v_end, rad_vel):
-        # TODO: Radial velocity implementation (SS group)
-        # TODO: Read from a database (SS Group)
+        # TODO: Read from a database using SQLINE (SS Group)
+        v_init_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
+        v_end_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_end
         location = './votables/band' + band + '.xml'
         tbl = parse_single_table(location)
-
-        #tbl.where((tbl.frequency >= v_init) & (tbl.frequency <= v_end))
+        #for i in 
+        #tbl.where((tbl.frequency >= v_init_corr) & (tbl.frequency <= v_end_corr))
         return tbl
 
 
