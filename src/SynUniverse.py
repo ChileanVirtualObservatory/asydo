@@ -40,7 +40,7 @@ class SynCube:
 		"""
 		deg2arcsec=3600.0
 		ghz2khz=1000000.0
-		max_channels=9000 
+		max_channels=9000
 		max_bw=2000000.0 # kHz
 		self.name=name
 		self.spec=spec
@@ -92,15 +92,15 @@ class SynCube:
 		if l_u > self.channels:
 			l_u = channels-1
 		return (int(l_w),int(l_u))
-		
-	
+
+
 	def _updatefig(self,j):
 		""" Animate helper function """
 		self.im.set_array(self.data[:,:,j])
 		return self.im,
 
 	def animate(self,inte,rep=True):
-		""" Animate the cube. 
+		""" Animate the cube.
 		    inte       : time interval between frames
 			 rep[=True] : boolean to repeat the animation
       """
@@ -123,15 +123,15 @@ class SynCube:
 		xi=int(round((x - self.x_axis[0])/self.spec.ang_res))
 		yi=int(round((y - self.y_axis[0])/self.spec.ang_res))
 		return self.data[xi][yi]
-	
+
 	def saveFits(self,filename):
 		""" Write the final FITS file in filename """
 		self.hdu.data = self.data
 		self.hdu.writeto(filename,clobber=True)
 
 class SynSource:
-	"""A source"""  
-	
+	"""A source"""
+
 	def __init__(self,log,name,pos,rad_vel,temp):
 		log.write('Source \''+ name +'\' added \n')
 		self.pos=pos
@@ -218,7 +218,7 @@ class SynSource:
 
 class SynUniverse:
 	"""Synthetic Cube Generation Class"""
-	
+
 	def __init__(self,log):
 		self.conf=defaultUniverse
 		self.sources=dict()
@@ -241,11 +241,11 @@ class SynUniverse:
 		#cube.addNoise(self.conf.band_noise) # To uncomment by SS group
 		cube.saveFits(filename)
 		return cube
-	
+
 	def removeSource(self,log,name):
 		#TODO: must be implemented by VU group
 		return 0
-	
+
 	def genImage(self,log,name,x_center,y_center,ang_res,ang_fov,filename):
 		#TODO: must be implemented by the IS group
 		return 0
