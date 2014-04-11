@@ -2,17 +2,32 @@
 ﻿ASYDO
 
 
-Astronomical SYntetic Data Observatory
+Astronomical Syntetic Data Observatory
+
+Dependencias:
+ * scipy
+ * numpy
+ * matplotlib
+ * requests
+ * urllib3
+ * astropy (via pip)
+
 
 Participantes:
-	*Rolando Casanueva
-	*Ricardo Carrasco
+
+ * Constanza Soto	 (SU)
+ * Cesar Parra		 (SU)
+
+ * Teodoro Hochfärber    (SS)
+ * Renato Sanhueza       (SS)
+
+ * Nicolas Bravo         (IS)
+ * Juan Bustamante       (IS)
+
+ * Rolando Casanueva     (VU)
+ * Ricardo Carrasco      (VU)
 
 
-Participantes:
-    *Teodoro Hochfärber
-    *Renato Sanhueza
-
-    * Nicolas Bravo
-    * Juan Bustamante
-
+**LOG SS**
+ * Se cambio atpy por AstroPy, puesto que es la bibilioteca descendiente.
+ * Se agregaron .gitignore para .xlm y .fits
