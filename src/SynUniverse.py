@@ -5,6 +5,7 @@ import random
 import string
 from astropy.io import fits
 from astropy.io.votable import parse_single_table
+import atpy
 from scipy import signal
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
@@ -139,7 +140,6 @@ class SynCube:
         self.hdu.data = self.data
         self.hdu.writeto(filename, clobber=True)
 
-
 class SynSource:
     """A source"""
 
@@ -226,9 +226,9 @@ class SynSource:
         v_init_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
         v_end_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_end
         location = './votables/band' + band + '.xml'
-        tbl = parse_single_table(location)
-        #for i in 
-        #tbl.where((tbl.frequency >= v_init_corr) & (tbl.frequency <= v_end_corr))
+        #tbl = parse_single_table(location)
+        tbl = atpy.Table(location)
+        tbl.where((tbl.frequency >= v_init_corr) & (tbl.frequency <= v_end_corr))
         return tbl
 
 
