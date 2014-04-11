@@ -14,6 +14,10 @@ Dependencias:
 
 
 Participantes:
+
+ * Constanza Soto	 (SU)
+ * Cesar Parra		 (SU)
+
  * Teodoro Hochfärber    (SS)
  * Renato Sanhueza       (SS)
 
