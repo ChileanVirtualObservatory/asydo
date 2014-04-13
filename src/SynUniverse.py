@@ -272,7 +272,7 @@ class SynUniverse:
         return 0
 
 def loadLines(band):
-        # TODO: Read from a database using SQLINE (SS Group)
+        # TODO: Read from a database using SQLITE (SS Group)
         #v_init_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
         #v_end_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_end
         location = './votables/band' + band + '.xml'
@@ -282,7 +282,7 @@ def loadLines(band):
         # tbl.field contiene la metadata
                 db = DataBase()
                 db.loadFields(tbl.fields)
-
+                db.genTable()
         return tbl
 
 

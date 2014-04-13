@@ -28,6 +28,7 @@ class DataBase:
     def Disconnect(self):
         if self.pointer:
             self.pointer.close()
+            self.connected = False
 
     def loadFields(self, fields):
         #recieves the fields from the VOtable and adds them to the class
@@ -37,6 +38,40 @@ class DataBase:
                 description = f.description
                 type = SqlEquivalent[f.datatype]
                 self.fields[name] = (description,type)
+
+    def genTable(self):
+        command = "CREATE TABLE Catalogo (ID INT PRIMARY KEY NOT NULL,"
+        metadata = "CREATE TABLE Metadata (ID INT PRIMARY KEY NOT NULL, Column TEXT NOT NULL, Description TEXT NOT NULL)"
+        insertmetadata = []
+        contador = 0
+        for i in self.fields:
+            name = i
+
+            descripcion, tipodato = self.fields[i]
+            if contador != 0:
+                command = command + ", "
+
+
+            command = command + " " + name.replace(" ", "_") + " " + tipodato
+            command2 = "INSERT INTO Metadata VALUES(" + str(contador) + ", '" + name + "', '" + descripcion + "')"
+            insertmetadata.append(command2)
+            contador += 1
+
+        command = command + ")"
+        self.Connect("ASYDOGet.DB")
+
+        self.pointer.execute(command)
+        self.pointer.execute(metadata)
+        for com in insertmetadata:
+            self.pointer.execute(com)
+        self.pointer.commit()
+
+        self.Disconnect()
+
+
+
+
+
 
 
 
