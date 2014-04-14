@@ -14,8 +14,6 @@ import matplotlib.pyplot as plt
 SynConf = namedtuple('SynUniverse',
                      'profile band_freq band_noise inten_group inten_values iso_abun base_abun base_CO')
 
-SynStruct = namedtuple('SynStruct', 'code intens spa_form spe_form')
-
 CubeSpec = namedtuple('CubeSpec', 'x_center y_center ang_res ang_fov v_center spe_res spe_bw')
 
 defaultUniverse = SynConf('default', \
@@ -35,6 +33,18 @@ MAX_CHANNELS = 9000
 MAX_BW = 2000000.0 # kHz
 SPEED_OF_LIGHT = 299792458.0
 
+class SynStruct:
+    """ A synthetic structure """
+    def __init__(self, log, code, intens, spa_form, spe_form):
+        self.log=log
+        self.code=code
+        self.intens=intens
+        self.spa_form=spa_form
+        self.spe_form=spe_form
+        #arrays to construct the table
+    
+    def setTemplate(self, template):
+        self.template=template
 
 class SynCube:
     """ A synthetic ALMA cube."""
@@ -162,7 +172,7 @@ class SynSource:
                 if iso in mol:
                     abun *= conf.iso_abun[iso]
             intens[mol] = abun
-        self.structs.append(SynStruct(code, intens, spa_form, spe_form))
+        self.structs.append(SynStruct(log,code, intens, spa_form, spe_form))
         log.write('Added to \'' + self.name + '\': molecules ' + str(mol_list) + '\n')
         log.write('  -> Spatial form  = ' + str(spa_form) + '\n')
         log.write('  -> Spectral form = ' + str(spe_form) + '\n')
@@ -188,7 +198,7 @@ class SynSource:
         lines = self.loadLines(cube.band, cube.v_border[0], cube.v_border[1], self.rad_vel)
         for struct in self.structs:
             log.write(' --> Struct Name: ' + struct.code + '\n')
-            tcub = self.genSurface(struct.spa_form, cube)
+            struct.setTemplate(self.genSurface(struct.spa_form, cube))
             fwhm = struct.spe_form[1]
             shape = struct.spe_form[2]
             for mol in struct.intens:
@@ -216,7 +226,7 @@ class SynSource:
                     log.write('Window:' + str(window) + '\n')
                     sigma = fwhm / S_FACTOR 
                     for idx in range(window[0], window[1]):
-                        cube.data[:, :, idx] += tcub * temp * exp(
+                        cube.data[:, :, idx] += struct.template * temp * exp(
                             (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
                     #TODO: FIX THIS PROBLEM NOW!!!
                     #print temp,cube.v_axis,freq/1000.0,sigma,shape
