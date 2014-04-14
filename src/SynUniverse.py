@@ -264,7 +264,7 @@ class SynUniverse:
             log.write('   * Source: ' + src + '\n')
             self.sources[src].emission(log, cube, self.conf.inten_group, self.conf.inten_values)
         log.write('   * Adding Noise... \n')
-        cube.addNoise(self.conf.band_noise) # To uncomment by SS group
+        cube.addNoise() # To uncomment by SS group
         cube.saveFits(filename)
         return cube
 
