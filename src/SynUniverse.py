@@ -42,10 +42,30 @@ class SynStruct:
         self.spa_form=spa_form
         self.spe_form=spe_form
         #arrays to construct the table
-    
+        self.arr_mol=[]
+        self.arr_chname=[]
+        self.arr_rest_freq=[]
+        self.arr_obs_freq=[]
+        self.arr_fwhm=[]
+        self.arr_temp=[]
+
     def setTemplate(self, template):
         self.template=template
 
+    def addTransition(self,mol,chname,rest_freq,obs_freq,fwhm,temp):
+        self.arr_mol.append(mol)
+        self.arr_chname.append(chname)
+        self.arr_rest_freq.append(rest_freq)
+        self.arr_obs_freq.append(obs_freq)
+        self.arr_fwhm.append(fwhm)
+        self.arr_temp.append(temp)
+
+    def getImageHDU(self):
+        #get template HDU
+
+    def getTableHDU(self)
+        #get table HDU
+    
 class SynCube:
     """ A synthetic ALMA cube."""
 
@@ -91,7 +111,6 @@ class SynCube:
         if self.band == 'NO_BAND':
             log.write('WARNING: not in a valid ALMA band\n')
         self.data = zeros((len(self.x_axis), len(self.y_axis), len(self.v_axis)))
-        self.hdu = fits.PrimaryHDU()
 
 
     def freqWindow(self, freq, fwhm):
@@ -145,10 +164,12 @@ class SynCube:
         return self.data[xi][yi]
 
 
-    def saveFits(self, filename):
+    def getCubeHDU(self):
         """ Write the final FITS file in filename """
-        self.hdu.data = self.data
-        self.hdu.writeto(filename, clobber=True)
+        hdu = fits.PrimaryHDU()
+        hdu.data = self.data
+        return hdu
+        #self.hdu.writeto(filename, clobber=True)
 
 class SynSource:
     """A source"""
@@ -217,19 +238,16 @@ class SynSource:
                         log.write('WARNING: Setting transition temperature to ' + str(self.temp) + '\n')
                         trans_temp = self.temp
                     temp = exp(-abs(trans_temp - self.temp) / self.temp) * rinte
-                    log.write('E: ' + mlin[i]['chemicalname'] + ' (' + mlin[i]['molformula'] + ') at ' + str(
-                        mlin[i]['frequency']) + ' Mhz, T = exp(-|' \
-                              + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(
-                        rinte) + ' = ' + str(temp) + ' K\n')
-                    freq = mlin[i]['frequency']
+                    freq = (1 + self.rad_vel*1000.0/SPEED_OF_LIGHT)*mlin[i]['frequency']
+                    log.write('E: ' + mlin[i]['chemicalname'] + ' (' + mlin[i]['molformula'] + ') at ' + str(freq) + ' Mhz, T = exp(-|' \
+                              + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(rinte) + ' = ' + str(temp) + ' K\n')
                     window = cube.freqWindow(freq / 1000.0, fwhm)
+                    struct.addTransition(mol,mlin[i]['chemicalname'],mlin[i]['frequency'],freq,fwhm,temp)
                     log.write('Window:' + str(window) + '\n')
                     sigma = fwhm / S_FACTOR 
                     for idx in range(window[0], window[1]):
                         cube.data[:, :, idx] += struct.template * temp * exp(
                             (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
-                    #TODO: FIX THIS PROBLEM NOW!!!
-                    #print temp,cube.v_axis,freq/1000.0,sigma,shape
 
     def loadLines(self, band, v_init, v_end, rad_vel):
         # TODO: Read from a database using SQLINE (SS Group)
@@ -264,7 +282,7 @@ class SynUniverse:
             log.write('   * Source: ' + src + '\n')
             self.sources[src].emission(log, cube, self.conf.inten_group, self.conf.inten_values)
         log.write('   * Adding Noise... \n')
-        cube.addNoise() # To uncomment by SS group
+        cube.addNoise() 
         cube.saveFits(filename)
         return cube
 
