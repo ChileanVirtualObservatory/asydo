@@ -115,7 +115,8 @@ class SynCube:
                 log.write('  -> Band: ' + bnd + '\n')
         if self.band == 'NO_BAND':
             log.write('WARNING: not in a valid ALMA band\n')
-        self.data = zeros((len(self.x_axis), len(self.y_axis), len(self.v_axis)))
+        #self.data = zeros((len(self.x_axis), len(self.y_axis), len(self.v_axis)))
+        self.data = zeros((len(self.v_axis),len(self.x_axis),len(self.y_axis)))
 
 
     def freqWindow(self, freq, fwhm):
@@ -136,7 +137,8 @@ class SynCube:
 
     def _updatefig(self, j):
         """ Animate helper function """
-        self.im.set_array(self.data[:, :, j])
+        #self.im.set_array(self.data[:, :, j])
+        self.im.set_array(self.data[j, :, :])
         return self.im,
 
 
@@ -146,7 +148,9 @@ class SynCube:
                  rep[=True] : boolean to repeat the animation
           """
         fig = plt.figure()
-        self.im = plt.imshow(self.data[:, :, 0], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
+        #self.im = plt.imshow(self.data[:, :, 0], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
+        #                     extent=(self.x_border[0], self.x_border[1], self.y_border[0], self.y_border[1]))
+        self.im = plt.imshow(self.data[0, :, :], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
                              extent=(self.x_border[0], self.x_border[1], self.y_border[0], self.y_border[1]))
         ani = animation.FuncAnimation(fig, self._updatefig, frames=range(len(self.v_axis)), interval=inte, blit=True,
                                       repeat=rep)
@@ -159,19 +163,26 @@ class SynCube:
             noise = 0.1
         else:
             noise = self.conf.band_noise[self.band]
-        self.data += np.random.random((len(self.x_axis), len(self.y_axis), len(self.v_axis))) * noise
+        #self.data += np.random.random((len(self.x_axis), len(self.y_axis), len(self.v_axis))) * noise
+        self.data += np.random.random((len(self.v_axis), len(self.x_axis), len(self.y_axis))) * noise
 
 
     def getSpectrum(self, x, y):
         """ Return an spectrum in x, y """
         xi = int(round((x - self.x_axis[0]) / self.spec.ang_res))
         yi = int(round((y - self.y_axis[0]) / self.spec.ang_res))
-        return self.data[xi][yi]
+        return self.data[:,xi,yi]
 
 
     def getCubeHDU(self):
         """ Write the final FITS file in filename """
-        hdu = fits.PrimaryHDU()
+        prihdr = fits.Header()
+        prihdr['AUTHOR'] = 'Astronomical SYnthetic Data Observatory'
+        prihdr['COMMENT'] = "Here's some commentary about this FITS file."
+        prihdr['SIMPLE'] = True
+        #prihdr['BITPIX'] = 8
+        prihdr['NAXIS'] = 3
+        hdu = fits.PrimaryHDU(header=prihdr)
         hdu.data = self.data
         return hdu
         #self.hdu.writeto(filename, clobber=True)
@@ -259,7 +270,9 @@ class SynSource:
                     log.write('Window:' + str(window) + '\n')
                     sigma = fwhm / S_FACTOR 
                     for idx in range(window[0], window[1]):
-                        cube.data[:, :, idx] += struct.template * temp * exp(
+                        #cube.data[:, :, idx] += struct.template * temp * exp(
+                        #    (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
+                        cube.data[idx, :, :] += struct.template * temp * exp(
                             (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
 
 
