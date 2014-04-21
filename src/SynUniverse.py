@@ -61,10 +61,15 @@ class SynStruct:
         self.arr_temp.append(temp)
 
     def getImageHDU(self):
-        #get template HDU
+        hdu = fits.PrimaryHDU()
+        hdu.data=self.template;
+        return hdu
 
-    def getTableHDU(self)
-        #get table HDU
+    def getTableHDU(self):
+        tbhdu = fits.new_table(fits.ColDefs([fits.Column(name='mol', format='20A', array=self.arr_mol),fits.Column(name='chname', format='40A', array=self.arr_chname),\
+                                             fits.Column(name='rest_freq', format='D', array=self.arr_rest_freq),fits.Column(name='obs_freq', format='D', array=self.arr_obs_freq),
+                                             fits.Column(name='fwhm', format='D', array=self.arr_fwhm), fits.Column(name='temp', format='D', array=self.arr_temp)]))
+        return tbhdu
     
 class SynCube:
     """ A synthetic ALMA cube."""
@@ -171,6 +176,14 @@ class SynCube:
         return hdu
         #self.hdu.writeto(filename, clobber=True)
 
+    def saveFits(self,sources,filename):
+        hdulist = fits.HDUList([self.getCubeHDU()])
+        for src in sources:
+            for struct in sources[src].structs:
+                hdulist.append(struct.getImageHDU())
+                hdulist.append(struct.getTableHDU())
+        hdulist.writeto(filename)
+
 class SynSource:
     """A source"""
 
@@ -249,6 +262,7 @@ class SynSource:
                         cube.data[:, :, idx] += struct.template * temp * exp(
                             (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
 
+
     def loadLines(self, band, v_init, v_end, rad_vel):
         # TODO: Read from a database using SQLINE (SS Group)
         v_init_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
@@ -283,7 +297,7 @@ class SynUniverse:
             self.sources[src].emission(log, cube, self.conf.inten_group, self.conf.inten_values)
         log.write('   * Adding Noise... \n')
         cube.addNoise() 
-        cube.saveFits(filename)
+        cube.saveFits(self.sources,filename)
         return cube
 
     def removeSource(self, log, name):
