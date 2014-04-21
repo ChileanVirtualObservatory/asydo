@@ -1,10 +1,14 @@
 import numpy as np
+from database import DataBase
 from pylab import *
 from collections import namedtuple
 import random
 import string
 from astropy.io import fits
 from astropy.io.votable import parse_single_table
+from astropy.table import Table
+from astropy.io.votable.tree import Table as pTable
+from astropy.io.votable.tree import Field as pField
 import atpy
 from scipy import signal
 import matplotlib.animation as animation
@@ -281,9 +285,10 @@ class SynSource:
         v_init_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
         v_end_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_end
         location = './votables/band' + band + '.xml'
-        #tbl = parse_single_table(location)
-        tbl = atpy.Table(location)
-        tbl.where((tbl.frequency >= v_init_corr) & (tbl.frequency <= v_end_corr))
+        tbl = parse_single_table(location).to_table()
+        print type(tbl)
+
+
         return tbl
 
 
@@ -321,4 +326,28 @@ class SynUniverse:
         #TODO: must be implemented by the IS group
         return 0
 
+def loadLines(band):
+        # TODO: Read from a database using SQLITE (SS Group)
+        #v_init_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
+        #v_end_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_end
+        location = './votables/band' + band + '.xml'
+        tbl = parse_single_table(location)
+        if isinstance(tbl,pTable):
+        # tbl.array contiene los datos
+        # tbl.field contiene la metadata
+            #db = DataBase()
+            #db.loadFields(tbl.fields)
+            #db.genTable()
+            c = 0
+            data = tbl.array
+            datas = data._data
+            print type(datas)
+            for i in datas:
+                print i
+            print "hola"
 
+        return tbl
+
+
+
+loadLines("lite")
