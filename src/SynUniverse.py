@@ -326,28 +326,28 @@ class SynUniverse:
         #TODO: must be implemented by the IS group
         return 0
 
-def loadLines(band):
+#def loadLines(band):
         # TODO: Read from a database using SQLITE (SS Group)
         #v_init_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
         #v_end_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_end
-        location = './votables/band' + band + '.xml'
-        tbl = parse_single_table(location)
-        if isinstance(tbl,pTable):
+#        location = './votables/band' + band + '.xml'
+#        tbl = parse_single_table(location)
+#        if isinstance(tbl,pTable):
         # tbl.array contiene los datos
         # tbl.field contiene la metadata
             #db = DataBase()
             #db.loadFields(tbl.fields)
             #db.genTable()
-            c = 0
-            data = tbl.array
-            datas = data._data
-            print type(datas)
-            for i in datas:
-                print i
-            print "hola"
+#            c = 0
+#            data = tbl.array
+#            datas = data._data
+#            print type(datas)
+#            for i in datas:
+#                print i
+#            print "hola"
+#
+#        return tbl
 
-        return tbl
 
 
-
-loadLines("lite")
+#loadLines("lite")
