@@ -137,7 +137,7 @@ class SynCube:
             l_w = ldiff * 1000000 / self.spec.spe_res
         l_u = udiff * 1000000 / self.spec.spe_res
         if l_u > self.channels:
-            l_u = channels - 1
+            l_u = self.channels - 1
         return (int(l_w), int(l_u))
 
 

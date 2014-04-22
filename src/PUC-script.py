@@ -8,9 +8,9 @@ molist=('COv=0','13COv=0','C18O','C17O','13C18O','NH2','N2H+v=0','CNv=0','HCNv=0
 
 log=open('PUC-script.log', 'w')
 
-univ=SynUniverse(log)
 counter=0.0
 for mol in molist:
+   univ=SynUniverse(log)
    univ.addSource(log,'alone-'+mol,0.0,counter,rvel,temp)
    s_x=random.uniform(0.01, 0.1)
    s_y=random.uniform(0.01, 0.1)
