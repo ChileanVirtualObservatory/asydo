@@ -1,4 +1,4 @@
-from SynUniverse import *
+from asydoCore import *
 import sys
 
 log=sys.stdout
