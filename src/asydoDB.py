@@ -5,7 +5,7 @@ import sys
 import urllib
 import urllib2
 import requests
-
+import csv
 
 SqlEquivalent = {
     "char":     "TEXT",
@@ -22,8 +22,7 @@ class SplataDBManager:
     fields = {}
     pointer = None
     slap_serv = 'https://find.nrao.edu/splata-slap/slap'
-    alma_band_freq = {'3': [88, 116], '4': [125, 163], '6': [
-        211, 275], '7': [275, 373], '8': [385, 500], '9': [602, 720]}
+    alma_band_freq = {'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500], '9': [602, 720]}
 
     def Connect(self, name):
         self.name = name
@@ -68,7 +67,7 @@ class SplataDBManager:
                 type = SqlEquivalent[f.datatype]
                 self.fields[name] = (description, type)
 
-    def createTableFromVO(self):
+    def createDBFromVO(self):
         command = "CREATE TABLE Catalogo (ID INT PRIMARY KEY NOT NULL,"
         metadata = "CREATE TABLE Metadata (ID INT PRIMARY KEY NOT NULL,"
         metadata += "Column TEXT NOT NULL, Description TEXT NOT NULL)"
@@ -97,4 +96,35 @@ class SplataDBManager:
         self.pointer.commit()
         self.Disconnect()
 
-    def createTableFromCSV(self, filename):
+    def createDBFromCSV(self, filename,output):
+        self.Connect(output)
+        create = "CREATE TABLE Lines(ID INT PRIMARY KEY NOT NULL,SPECIES TEXT,CHEM_NAME TEXT,FREQ REAL,INTENSITY REAL,EL REAL)"
+        drop = "DROP TABLE Lines"
+        with open(filename, 'rb') as csvfile:
+            sreader = csv.reader(csvfile, delimiter=':', quotechar='|')
+            counter=0
+            for row in sreader:
+                if counter == 0:
+                    self.pointer.execute(drop)
+                    self.pointer.execute(create)
+                    counter+=1
+                else:
+                    if len(row) < 10:
+                        continue
+                    species=row[0].replace("'","-")
+                    chname=row[1].replace("'","-")
+                    freq=row[2]
+                    if freq=='':
+                        freq=row[4]
+                    insert="INSERT INTO Lines VALUES("+str(counter)+",'"+species+"','"+chname+\
+                           "',"+freq+","+row[7]+","+row[8]+")"
+                    self.pointer.execute(insert)
+                    counter+=1
+        self.pointer.commit()
+        self.Disconnect()
+
+
+mng=SplataDBManager()
+mng.createDBFromCSV('bin/splatalogue.csv','lines.db')
+
+

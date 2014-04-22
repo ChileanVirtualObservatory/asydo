@@ -1,15 +1,15 @@
 import numpy as np
-from database import DataBase
 from pylab import *
 from collections import namedtuple
 import random
 import string
 from astropy.io import fits
-from astropy.io.votable import parse_single_table
-from astropy.table import Table
-from astropy.io.votable.tree import Table as pTable
-from astropy.io.votable.tree import Field as pField
-import atpy
+import sqlite3 as lite
+#from astropy.io.votable import parse_single_table
+#from astropy.table import Table
+#from astropy.io.votable.tree import Table as pTable
+#from astropy.io.votable.tree import Field as pField
+#import atpy
 from scipy import signal
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
@@ -22,9 +22,9 @@ CubeSpec = namedtuple('CubeSpec', 'x_center y_center ang_res ang_fov v_center sp
 defaultUniverse = SynConf('default', \
                           {'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500],'9': [602, 720]},\
                           {'3': 0.01, '4': 0.012, '6': 0.02, '7': 0.04, '8': 0.08, '9': 0.16},\
-                          [('default'), ('CO'), ('13CO'), ('HCO+, HC3N, CS, C18O, CH3OH, N2H')],\
+                          [('default'), ('COv=0'), ('13COv=0'), ('HCO+, HC3N, CS, C18O, CH3OH, N2H')],\
                           [[0.1, 2], [20, 60], [5, 20], [1, 10]],\
-                          {'13C': 1.0 / 30, '18O': 1.0 / 60, '17O': '1.0/120', '34S': 1.0 / 30, '33S': 1.0 / 120,'13N': 1.0 / 30, 'D': 1.0 / 30},\
+                          {'13C': 1.0 / 30, '18O': 1.0 / 60, '17O': 1.0/120, '34S': 1.0 / 30, '33S': 1.0 / 120,'13N': 1.0 / 30, 'D': 1.0 / 30},\
                           [10 ** -5, 10 ** -6],\
                           1.0)
 
@@ -199,7 +199,7 @@ class SynCube:
             for struct in sources[src].structs:
                 hdulist.append(struct.getImageHDU())
                 hdulist.append(struct.getTableHDU())
-        hdulist.writeto(filename)
+        hdulist.writeto(filename, clobber=True)
 
 class SynSource:
     """A source"""
@@ -217,7 +217,7 @@ class SynSource:
         intens = dict()
         for mol in mol_list.split(','):
             abun = random.uniform(conf.base_abun[0], conf.base_abun[1])
-            if mol in ('CO', '13CO', 'C18O', 'C17O', '13C18O'):
+            if mol in ('COv=0', '13COv=0', 'C18O', 'C17O', '13C18O'):
                 abun += conf.base_CO
             for iso in conf.iso_abun:
                 if iso in mol:
@@ -246,34 +246,44 @@ class SynSource:
 
     def emission(self, log, cube, inten_group, inten_values):
         log.write('Loading visible lines in band ' + cube.band + ' (rad_vel=' + str(self.rad_vel) + ')\n')
-        lines = self.loadLines(cube.band, cube.v_border[0], cube.v_border[1], self.rad_vel)
+        db=lite.connect('lines.db')
+        #lines = self.loadLines(cube.band, cube.v_border[0], cube.v_border[1], self.rad_vel)
         for struct in self.structs:
             log.write(' --> Struct Name: ' + struct.code + '\n')
             struct.setTemplate(self.genSurface(struct.spa_form, cube))
             fwhm = struct.spe_form[1]
             shape = struct.spe_form[2]
+            v_init_corr = cube.v_border[0]*1000.0/(1 + self.rad_vel*1000.0/SPEED_OF_LIGHT)
+            v_end_corr = cube.v_border[1]*1000.0/(1 + self.rad_vel*1000.0/SPEED_OF_LIGHT)
+
             for mol in struct.intens:
-                mlin = lines.where((lines.molformula == mol))
+                log.write("SQL SENTENCE:\n")
+                select="SELECT * FROM Lines WHERE SPECIES like '"+mol+"' AND FREQ > "+str(v_init_corr)+" AND FREQ < "+str(v_end_corr)
+                log.write(select+'\n')
+                resp=db.execute(select)
+                linlist=resp.fetchall()
                 rinte = inten_values[0]
                 for j in range(len(inten_group)):
                     if mol in inten_group[j]:
                         rinte = inten_values[j]
                 rinte = random.uniform(rinte[0], rinte[1])
-                for i in range(len(mlin)):
-                    try:
-                        trans_temp = float(mlin[i]['lowerstateenergyK'])
-                    except ValueError:
-                        log.write('WARNING: Strange transition temperature, printing line...\n')
-                        log.write('WARNING: ' + str(mlin[i]) + '\n')
-                        log.write('WARNING: Setting transition temperature to ' + str(self.temp) + '\n')
-                        trans_temp = self.temp
+                #for i in range(len(mlin)):
+                #    try:
+                #        trans_temp = float(mlin[i]['lowerstateenergyK'])
+                #    except ValueError:
+                #        log.write('WARNING: Strange transition temperature, printing line...\n')
+                #        log.write('WARNING: ' + str(mlin[i]) + '\n')
+                #        log.write('WARNING: Setting transition temperature to ' + str(self.temp) + '\n')
+                #        trans_temp = self.temp
+                for lin in linlist:
+                    trans_temp=lin[5]
                     temp = exp(-abs(trans_temp - self.temp) / self.temp) * rinte
-                    freq = (1 + self.rad_vel*1000.0/SPEED_OF_LIGHT)*mlin[i]['frequency']
-                    log.write('E: ' + mlin[i]['chemicalname'] + ' (' + mlin[i]['molformula'] + ') at ' + str(freq) + ' Mhz, T = exp(-|' \
-                              + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(rinte) + ' = ' + str(temp) + ' K\n')
+                    freq = (1 + self.rad_vel*1000.0/SPEED_OF_LIGHT)*lin[3]
+                    log.write('E: ' + str(lin[2]) + ' (' + str(lin[1]) + ') at ' + str(freq) + ' Mhz, T = exp(-|' \
+                              + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(rinte) + ' = ' + str(temp) + ' K  ')
                     window = cube.freqWindow(freq / 1000.0, fwhm)
-                    struct.addTransition(mol, mlin[i]['chemicalname'], mlin[i]['frequency'], freq, fwhm, temp)
-                    log.write('Window:' + str(window) + '\n')
+                    struct.addTransition(mol,  str(lin[2]) , str(lin[3]) , freq, fwhm, temp)
+                    log.write('[W:' + str(window) + ']\n')
                     sigma = fwhm / S_FACTOR 
                     for idx in range(window[0], window[1]):
                         # cube.data[:, :, idx] += struct.template * temp * exp(
@@ -282,16 +292,16 @@ class SynSource:
                             (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
 
 
-    def loadLines(self, band, v_init, v_end, rad_vel):
-        # TODO: Read from a database using SQLINE (SS Group)
-        v_init_corr = (1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
-        v_end_corr = (1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_end
-        location = './votables/band' + band + '.xml'
-        tbl = parse_single_table(location).to_table()
-        print type(tbl)
+#    def loadLines(self, band, v_init, v_end, rad_vel):
+#        # TODO: Read from a database using SQLINE (SS Group)
+#        v_init_corr = (1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
+#        v_end_corr = (1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_end
+#        location = './votables/band' + band + '.xml'
+#        tbl = parse_single_table(location).to_table()
+#        print type(tbl)
 
 
-        return tbl
+#        return tbl
 
 
 class SynUniverse:
