@@ -12,10 +12,10 @@ counter=0.0
 for mol in molist:
    univ=SynUniverse(log)
    univ.addSource(log,'alone-'+mol,0.0,counter,rvel,temp)
-   s_x=random.uniform(0.01, 0.1)
-   s_y=random.uniform(0.01, 0.1)
+   s_x=random.uniform(0.0001, 0.001)
+   s_y=random.uniform(0.0001, 0.001)
    rot=random.uniform(0.0, 1.67)
-   mov=random.uniform(0.01,0.05)
+   mov=random.uniform(0.05,0.1)
    univ.addStruct(log,'alone-'+mol,mol,('Gaussian',s_x,s_y,rot,1.0),('Gaussian',mov,1.0))
    for i in range(49):
       fcenter=276 + 2*i

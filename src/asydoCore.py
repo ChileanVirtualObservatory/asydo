@@ -21,7 +21,7 @@ CubeSpec = namedtuple('CubeSpec', 'x_center y_center ang_res ang_fov v_center sp
 
 defaultUniverse = SynConf('default', \
                           {'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500],'9': [602, 720]},\
-                          {'3': 0.001, '4': 0.0012, '6': 0.002, '7': 0.004, '8': 0.008, '9': 0.016},\
+                          {'3': 0.01, '4': 0.012, '6': 0.02, '7': 0.04, '8': 0.08, '9': 0.16},\
                           [('default'), ('COv=0'), ('13COv=0'), ('HCO+, HC3N, CS, C18O, CH3OH, N2H')],\
                           [[0.1, 2], [20, 60], [5, 20], [1, 10]],\
                           {'13C': 1.0 / 30, '18O': 1.0 / 60, '17O': 1.0/120, '34S': 1.0 / 30, '33S': 1.0 / 120,'13N': 1.0 / 30, 'D': 1.0 / 30},\
@@ -122,7 +122,11 @@ class SynCube:
         if self.band == 'NO_BAND':
             log.write('WARNING: not in a valid ALMA band\n')
         # self.data = zeros((len(self.x_axis), len(self.y_axis), len(self.v_axis)))
-        self.data = zeros((len(self.v_axis), len(self.x_axis), len(self.y_axis)))
+        if self.band == 'NO_BAND':
+            noise = 0.0001
+        else:
+            noise = self.conf.band_noise[self.band]
+        self.data = np.random.random((len(self.v_axis), len(self.x_axis), len(self.y_axis))) * noise
 
 
     def freqWindow(self, freq, fwhm):
@@ -163,13 +167,6 @@ class SynCube:
         plt.show()
 
 
-    def addNoise(self):
-        """ Adds the noise. The noise of the level is defined in the Universe configuration (band_noise) """
-        if self.band == 'NO_BAND':
-            noise = 0.1
-        else:
-            noise = self.conf.band_noise[self.band]
-        #self.data += np.random.random((len(self.v_axis), len(self.x_axis), len(self.y_axis))) * noise
 
 
     def getSpectrum(self, x, y):
@@ -241,6 +238,7 @@ class SynSource:
         u = (XX / sx) ** 2 + (YY / sy) ** 2;
         sol = sx * sy * exp(-u / 2) / (2 * pi);
         res = transpose(reshape(sol, (len(cube.y_axis), len(cube.y_axis))))
+        res=res/res.max()
         return res
 
     def emission(self, log, cube, inten_group, inten_values):
@@ -283,12 +281,16 @@ class SynSource:
                     window = cube.freqWindow(freq / 1000.0, fwhm)
                     struct.addTransition(mol,  str(lin[2]) , str(lin[3]) , freq, fwhm, temp)
                     log.write('[W:' + str(window) + ']\n')
-                    sigma = fwhm / S_FACTOR 
+                    sigma = fwhm / S_FACTOR
+                    distro=list()
                     for idx in range(window[0], window[1]):
                         # cube.data[:, :, idx] += struct.template * temp * exp(
                         #    (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
-                        cube.data[idx,:,:] += struct.template * temp * exp(
-                            (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
+                        distro.append(exp((-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape))))
+                    distro=distro/max(distro)
+                    log.write(str(distro)+'\n')
+                    for idx in range(window[0], window[1]):
+                        cube.data[idx] = cube.data[idx] + struct.template * temp * distro[idx-window[0]]
 
 
 #    def loadLines(self, band, v_init, v_end, rad_vel):
@@ -325,7 +327,6 @@ class SynUniverse:
             log.write('   * Source: ' + src + '\n')
             self.sources[src].emission(log, cube, self.conf.inten_group, self.conf.inten_values)
         log.write('   * Adding Noise... \n')
-        cube.addNoise() 
         cube.saveFits(self.sources, filename)
         return cube
 

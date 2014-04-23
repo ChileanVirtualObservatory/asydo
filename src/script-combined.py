@@ -11,11 +11,11 @@ log=open('script-combined.log', 'w')
 univ=SynUniverse(log)
 for mol in molist:
    univ.addSource(log,'combined-'+mol,0.0,0.0,rvel,temp)
-   s_x=random.uniform(0.01, 0.1)
-   s_y=random.uniform(0.01, 0.1)
+   s_x=random.uniform(0.0001, 0.001)
+   s_y=random.uniform(0.0001, 0.001)
    rot=random.uniform(0.0, 1.67)
-   mov=random.uniform(0.01,0.05)
-   univ.addStruct(log,'alone-'+mol,mol,('Gaussian',s_x,s_y,rot,1.0),('Gaussian',mov,1.0))
+   mov=random.uniform(0.05,0.1)
+   univ.addStruct(log,'combined-'+mol,mol,('Gaussian',s_x,s_y,rot,1.0),('Gaussian',mov,1.0))
 for i in range(49):
    fcenter=276 + 2*i
    cube=univ.genCube(log,'combined-'+mol,0.0,0.0,0.1,0.8,float(fcenter),2000,2000000,'combined-'+str(fcenter)+'.fits')
