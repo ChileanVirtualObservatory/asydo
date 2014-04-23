@@ -43,6 +43,9 @@ class SynStruct:
         self.spa_form = spa_form
         self.spe_form = spe_form
         # arrays to construct the table
+        self.clear()
+
+    def clear(self):
         self.arr_mol = []
         self.arr_chname = []
         self.arr_rest_freq = []
@@ -246,6 +249,7 @@ class SynSource:
         db=lite.connect('lines.db')
         #lines = self.loadLines(cube.band, cube.v_border[0], cube.v_border[1], self.rad_vel)
         for struct in self.structs:
+            struct.clear()
             log.write(' --> Struct Name: ' + struct.code + '\n')
             struct.setTemplate(self.genSurface(struct.spa_form, cube))
             fwhm = struct.spe_form[1]
