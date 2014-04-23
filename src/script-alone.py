@@ -6,7 +6,7 @@ temp=300.0
 molist=('COv=0','13COv=0','C18O','C17O','13C18O','NH2','N2H+v=0','CNv=0','HCNv=0','HNCv=0','H2CN','CSv=0','CCS','H2S','H2CS','SO2v=0','H2CO','HCO+v=0','HC3Nv=0','HC5Nv=0','CH3OHvt=0')
 
 
-log=open('PUC-script.log', 'w')
+log=open('script-alone.log', 'w')
 
 counter=0.0
 for mol in molist:
