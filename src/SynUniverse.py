@@ -1,4 +1,5 @@
 import numpy as np
+
 from database import DataBase
 from pylab import *
 from collections import namedtuple
@@ -14,6 +15,9 @@ from scipy import signal
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
+
+import warnings
+warnings.filterwarnings("ignore")
 
 SynConf = namedtuple('SynUniverse',
                      'profile band_freq band_noise inten_group inten_values iso_abun base_abun base_CO')
@@ -280,16 +284,15 @@ def loadLines(band):
         if isinstance(tbl,pTable):
         # tbl.array contiene los datos
         # tbl.field contiene la metadata
-            #db = DataBase()
-            #db.loadFields(tbl.fields)
-            #db.genTable()
-            c = 0
-            data = tbl.array
-            datas = data._data
-            print type(datas)
-            for i in datas:
-                print i
-            print "hola"
+            db = DataBase()
+            print tbl.fields
+            db.loadFields(tbl.fields)
+            db.insertData(tbl.array)
+            db.genTable()
+            db.deleteDB()
+
+
+
 
         return tbl
 

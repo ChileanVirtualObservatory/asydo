@@ -1,6 +1,8 @@
+import os
 import sqlite3 as lite
 import sys
 from astropy.io.votable.tree import Field as pField
+from pprint import pprint
 
 SqlEquivalent = {
     "char":     "TEXT",
@@ -39,6 +41,14 @@ class DataBase:
                 type = SqlEquivalent[f.datatype]
                 self.fields[name] = (description,type)
 
+    def printTableDef(self,command):
+        f = open("Table_def", "w")
+        com, content = command.split("(")
+        lines = content.split(",")
+        print command
+        print com
+        map(pprint,lines)
+
     def genTable(self):
         command = "CREATE TABLE Catalogo (ID INT PRIMARY KEY NOT NULL,"
         metadata = "CREATE TABLE Metadata (ID INT PRIMARY KEY NOT NULL, Column TEXT NOT NULL, Description TEXT NOT NULL)"
@@ -55,6 +65,7 @@ class DataBase:
             command = command + " " + name.replace(" ", "_") + " " + tipodato
             command2 = "INSERT INTO Metadata VALUES(" + str(contador) + ", '" + name + "', '" + descripcion + "')"
             insertmetadata.append(command2)
+            print name
             contador += 1
 
         command = command + ")"
@@ -67,6 +78,18 @@ class DataBase:
         self.pointer.commit()
 
         self.Disconnect()
+        #self.printTableDef(command)
+
+    def insertData(self,Datos):
+        c = 0
+        data = Datos._data
+        print data[0]
+        #for i in data:
+         #       c += 1
+
+    def deleteDB(self):
+        os.remove(self.name)
+
 
 
 
