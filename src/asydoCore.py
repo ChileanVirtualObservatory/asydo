@@ -148,26 +148,26 @@ class SynCube:
         return (int(l_w), int(l_u))
 
 
-    def _updatefig(self, j):
-        """ Animate helper function """
-        # self.im.set_array(self.data[:, :, j])
-        self.im.set_array(self.data[j,:,:])
-        return self.im,
+#    def _updatefig(self, j):
+#        """ Animate helper function """
+#        # self.im.set_array(self.data[:, :, j])
+#        self.im.set_array(self.data[j,:,:])
+#        return self.im,
 
 
-    def animate(self, inte, rep=True):
-        """ Animate the cube.
-                inte       : time interval between frames
-                 rep[=True] : boolean to repeat the animation
-          """
-        fig = plt.figure()
-        # self.im = plt.imshow(self.data[:, :, 0], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
-        #                     extent=(self.x_border[0], self.x_border[1], self.y_border[0], self.y_border[1]))
-        self.im = plt.imshow(self.data[0,:,:], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
-                             extent=(self.x_border[0], self.x_border[1], self.y_border[0], self.y_border[1]))
-        ani = animation.FuncAnimation(fig, self._updatefig, frames=range(len(self.v_axis)), interval=inte, blit=True,
-                                      repeat=rep)
-        plt.show()
+#    def animate(self, inte, rep=True):
+#        """ Animate the cube.
+#                inte       : time interval between frames
+#                 rep[=True] : boolean to repeat the animation
+#          """
+#        fig = plt.figure()
+#        # self.im = plt.imshow(self.data[:, :, 0], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
+#        #                     extent=(self.x_border[0], self.x_border[1], self.y_border[0], self.y_border[1]))
+#        self.im = plt.imshow(self.data[0,:,:], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
+#                             extent=(self.x_border[0], self.x_border[1], self.y_border[0], self.y_border[1]))
+#        ani = animation.FuncAnimation(fig, self._updatefig, frames=range(len(self.v_axis)), interval=inte, blit=True,
+#                                      repeat=rep)
+#        plt.show()
 
 
 
@@ -292,7 +292,7 @@ class SynSource:
                         #    (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
                         distro.append(np.exp((-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape))))
                     distro=distro/max(distro)
-                    log.write(str(distro)+'\n')
+                    #log.write(str(distro)+'\n')
                     for idx in range(window[0], window[1]):
                         cube.data[idx] = cube.data[idx] + struct.template * temp * distro[idx-window[0]]
 
