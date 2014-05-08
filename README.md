@@ -9,7 +9,7 @@ Dependencies:
  * numpy
  * matplotlib
  * astropy 
- * sqlite
+ * pysqlite
 
 Authors:
 

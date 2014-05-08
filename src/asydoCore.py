@@ -239,7 +239,6 @@ class SynSource:
         XX = (Xc) * math.cos(theta) - (Yc) * math.sin(theta);
         YY = (Xc) * math.sin(theta) + (Yc) * math.cos(theta);
         u = (XX / sx) ** 2 + (YY / sy) ** 2;
-        print u
         sol = sx * sy * np.exp(-u / 2) / (2 * math.pi);
         res = np.transpose(np.reshape(sol, (len(cube.y_axis), len(cube.y_axis))))
         res=res/res.max()
@@ -247,7 +246,7 @@ class SynSource:
 
     def emission(self, log, cube, inten_group, inten_values):
         log.write('Loading visible lines in band ' + cube.band + ' (rad_vel=' + str(self.rad_vel) + ')\n')
-        db=lite.connect('lines.db')
+        db=lite.connect('db/lines.db')
         #lines = self.loadLines(cube.band, cube.v_border[0], cube.v_border[1], self.rad_vel)
         for struct in self.structs:
             struct.clear()
@@ -279,7 +278,7 @@ class SynSource:
                 #        trans_temp = self.temp
                 for lin in linlist:
                     trans_temp=lin[5]
-                    temp = exp(-abs(trans_temp - self.temp) / self.temp) * rinte
+                    temp = np.exp(-abs(trans_temp - self.temp) / self.temp) * rinte
                     freq = (1 + self.rad_vel*1000.0/SPEED_OF_LIGHT)*lin[3]
                     log.write('E: ' + str(lin[2]) + ' (' + str(lin[1]) + ') at ' + str(freq) + ' Mhz, T = exp(-|' \
                               + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(rinte) + ' = ' + str(temp) + ' K  ')
@@ -291,7 +290,7 @@ class SynSource:
                     for idx in range(window[0], window[1]):
                         # cube.data[:, :, idx] += struct.template * temp * exp(
                         #    (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
-                        distro.append(exp((-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape))))
+                        distro.append(np.exp((-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape))))
                     distro=distro/max(distro)
                     log.write(str(distro)+'\n')
                     for idx in range(window[0], window[1]):

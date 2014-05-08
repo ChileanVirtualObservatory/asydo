@@ -105,12 +105,15 @@ class SplataDBManager:
             counter=0
             for row in sreader:
                 if counter == 0:
-                    self.pointer.execute(drop)
+                    try:
+                       self.pointer.execute(drop)
+                    except lite.OperationalError:
+                       print "WARNING: Drop failed\n"
                     self.pointer.execute(create)
                     counter+=1
                 else:
                     if len(row) < 10:
-                        continue
+                       continue
                     species=row[0].replace("'","-")
                     chname=row[1].replace("'","-")
                     freq=row[2]
@@ -125,6 +128,6 @@ class SplataDBManager:
 
 
 mng=SplataDBManager()
-mng.createDBFromCSV('bin/splatalogue.csv','lines.db')
+mng.createDBFromCSV('splatalogue.csv','lines.db')
 
 
