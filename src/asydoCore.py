@@ -1,5 +1,5 @@
 import numpy as np
-from pylab import *
+import math
 from collections import namedtuple
 import random
 import string
@@ -232,15 +232,16 @@ class SynSource:
         sx = form[1]
         sy = form[2]
         theta = form[3]
-        r = 3 * sqrt(sx ** 2 + sy ** 2)
-        x_mesh, y_mesh = meshgrid(cube.x_axis, cube.y_axis, sparse=False, indexing='xy')
-        Xc = x_mesh.flatten() - self.pos[0] * ones(len(cube.x_axis) * len(cube.y_axis))
-        Yc = y_mesh.flatten() - self.pos[1] * ones(len(cube.x_axis) * len(cube.y_axis))
-        XX = (Xc) * cos(theta) - (Yc) * sin(theta);
-        YY = (Xc) * sin(theta) + (Yc) * cos(theta);
+        r = 3 * math.sqrt(sx ** 2 + sy ** 2)
+        x_mesh, y_mesh = np.meshgrid(cube.x_axis, cube.y_axis, sparse=False, indexing='xy')
+        Xc = x_mesh.flatten() - self.pos[0] * np.ones(len(cube.x_axis) * len(cube.y_axis))
+        Yc = y_mesh.flatten() - self.pos[1] * np.ones(len(cube.x_axis) * len(cube.y_axis))
+        XX = (Xc) * math.cos(theta) - (Yc) * math.sin(theta);
+        YY = (Xc) * math.sin(theta) + (Yc) * math.cos(theta);
         u = (XX / sx) ** 2 + (YY / sy) ** 2;
-        sol = sx * sy * exp(-u / 2) / (2 * pi);
-        res = transpose(reshape(sol, (len(cube.y_axis), len(cube.y_axis))))
+        print u
+        sol = sx * sy * np.exp(-u / 2) / (2 * math.pi);
+        res = np.transpose(np.reshape(sol, (len(cube.y_axis), len(cube.y_axis))))
         res=res/res.max()
         return res
 

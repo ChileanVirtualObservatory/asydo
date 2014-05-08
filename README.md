@@ -4,30 +4,21 @@
 
 Astronomical Syntetic Data Observatory
 
-Dependencias:
+Dependencies:
  * scipy
  * numpy
  * matplotlib
- * requests
- * urllib3
- * astropy (via pip)
+ * astropy 
+ * sqlite
 
+Authors:
 
-Participantes:
-
- * Constanza Soto	 (SU)
- * Cesar Parra		 (SU)
-
+ * Mauricio Araya       (ALL)
  * Teodoro Hochfärber    (SS)
  * Renato Sanhueza       (SS)
-
  * Nicolas Bravo         (IS)
  * Juan Bustamante       (IS)
-
  * Rolando Casanueva     (VU)
  * Ricardo Carrasco      (VU)
 
 
-**LOG SS**
- * Se cambio atpy por AstroPy, puesto que es la bibilioteca descendiente.
- * Se agregaron .gitignore para .xlm y .fits
