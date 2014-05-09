@@ -18,5 +18,5 @@ for mol in molist:
    univ.addStruct(log,'combined-'+mol,mol,('Gaussian',s_x,s_y,rot,1.0),('Gaussian',mov,1.0))
 for i in range(49):
    fcenter=276 + 2*i
-   cube=univ.genCube(log,'combined-'+mol,0.0,0.0,0.1,0.8,float(fcenter),2000,2000000,'combined-'+str(fcenter)+'.fits')
+   cube=univ.genCube(log,'combined-'+mol,0.0,0.0,float(fcenter),0.1,0.8,2000,2000000,'combined-'+str(fcenter)+'.fits')
 

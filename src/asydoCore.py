@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 SynConf = namedtuple('SynUniverse','profile band_freq band_noise inten_group inten_values iso_abun base_abun base_CO')
 
-CubeSpec = namedtuple('CubeSpec', 'x_center y_center ang_res ang_fov v_center spe_res spe_bw')
+CubeSpec = namedtuple('CubeSpec', 'alpha delta freq ang_res ang_fov spe_res spe_bw')
 
 defaultUniverse = SynConf('default', \
                           {'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500],'9': [602, 720]},\
@@ -42,7 +42,6 @@ class SynStruct:
         self.intens = intens
         self.spa_form = spa_form
         self.spe_form = spe_form
-        # arrays to construct the table
         self.clear()
 
     def clear(self):
@@ -94,42 +93,42 @@ class SynCube:
         self.spec = spec
         self.conf = conf
         log.write('Generating cube ' + name + '\n')
-        log.write('  -> Spatial Center (deg): ra=' + str(spec.x_center)\
-                  + ' dec=' + str(spec.y_center) + '\n')
+        log.write('  -> Angular Coordinates (deg): ra=' + str(spec.alpha)\
+                  + ' dec=' + str(spec.delta) + '\n')
         fact = spec.ang_fov / (DEG2ARCSEC * spec.ang_res)
-        self.x_border = [spec.x_center - fact / 2, spec.x_center + fact / 2]
-        self.y_border = [spec.y_center - fact / 2, spec.y_center + fact / 2]
-        self.x_axis = np.linspace(self.x_border[0], self.x_border[1], spec.ang_fov / spec.ang_res)
-        self.y_axis = np.linspace(self.y_border[0], self.y_border[1], spec.ang_fov / spec.ang_res)
-        if spec.x_center > 90 or spec.x_center < -90:
-            raise Exception('ERROR: invalid coordinate: ra=' + spec.x_center)
-        if spec.y_center > 90 or spec.y_center < -90:
-            raise Exception('ERROR: invalid coordinate: dec=' + spec.y_center)
-        log.write('  -> FOV (arcsec): ra=' + str(self.x_border) + ' dec=' + str(self.y_border) + '\n')
-        self.v_border = [spec.v_center - spec.spe_bw / (2.0 * 1000000), spec.v_center + spec.spe_bw / (2.0 * 1000000)]
+        self.alpha_border = [spec.alpha - fact / 2, spec.alpha + fact / 2]
+        self.delta_border = [spec.delta - fact / 2, spec.delta + fact / 2]
+        self.alpha_axis = np.linspace(self.alpha_border[0], self.alpha_border[1], spec.ang_fov / spec.ang_res)
+        self.delta_axis = np.linspace(self.delta_border[0], self.delta_border[1], spec.ang_fov / spec.ang_res)
+        if spec.alpha > 90 or spec.alpha < -90:
+            raise Exception('ERROR: invalid coordinate: ra=' + spec.alpha)
+        if spec.delta > 90 or spec.delta < -90:
+            raise Exception('ERROR: invalid coordinate: dec=' + spec.delta)
+        log.write('  -> FOV (arcsec): ra=' + str(self.alpha_border) + ' dec=' + str(self.delta_border) + '\n')
+        self.freq_border = [spec.freq - spec.spe_bw / (2.0 * 1000000), spec.freq + spec.spe_bw / (2.0 * 1000000)]
         if spec.spe_bw > MAX_BW:
             log.write('WARNING: max ALMA bandwidth exceeded\n')
         self.channels = round(spec.spe_bw / spec.spe_res)
         if self.channels > MAX_CHANNELS:
             log.write('WARNING: max ALMA channels exceeded\n')
-        self.v_axis = np.linspace(self.v_border[0], self.v_border[1], self.channels)
-        log.write('  -> Spectral (GHz): center=' + str(spec.v_center) + ' bandwidth=' + str(self.v_border) + '\n')
-        log.write('  -> Cube size: ' + str(len(self.x_axis)) + ' x ' + str(len(self.y_axis)) + ' x ' + str(
-            len(self.v_axis)) + ' \n')
+        self.freq_axis = np.linspace(self.freq_border[0], self.freq_border[1], self.channels)
+        log.write('  -> Spectral (GHz): center=' + str(spec.freq) + ' bandwidth=' + str(self.freq_border) + '\n')
+        log.write('  -> Cube size: ' + str(len(self.alpha_axis)) + ' x ' + str(len(self.delta_axis)) + ' x ' + str(
+            len(self.freq_axis)) + ' \n')
         self.band = 'NO_BAND'
         for bnd in conf.band_freq:
             freqs = conf.band_freq[bnd]
-            if self.v_border[0] >= freqs[0] and self.v_border[1] <= freqs[1]:
+            if self.freq_border[0] >= freqs[0] and self.freq_border[1] <= freqs[1]:
                 self.band = bnd
                 log.write('  -> Band: ' + bnd + '\n')
         if self.band == 'NO_BAND':
             log.write('WARNING: not in a valid ALMA band\n')
-        # self.data = zeros((len(self.x_axis), len(self.y_axis), len(self.v_axis)))
+        # self.data = zeros((len(self.alpha_axis), len(self.delta_axis), len(self.freq_axis)))
         if self.band == 'NO_BAND':
             noise = 0.0001
         else:
             noise = self.conf.band_noise[self.band]
-        self.data = np.random.random((len(self.v_axis), len(self.x_axis), len(self.y_axis))) * noise
+        self.data = np.random.random((len(self.freq_axis), len(self.alpha_axis), len(self.delta_axis))) * noise
 
 
     def freqWindow(self, freq, fwhm):
@@ -137,8 +136,8 @@ class SynCube:
                  Given a freq and a fwhm compute returns the range of channels that are affectet
             """
         factor = 2.0;
-        ldiff = freq - self.v_border[0] - factor * fwhm;
-        udiff = freq - self.v_border[0] + factor * fwhm;
+        ldiff = freq - self.freq_border[0] - factor * fwhm;
+        udiff = freq - self.freq_border[0] + factor * fwhm;
         l_w = 0
         if (ldiff > 0):
             l_w = ldiff * 1000000 / self.spec.spe_res
@@ -162,10 +161,10 @@ class SynCube:
 #          """
 #        fig = plt.figure()
 #        # self.im = plt.imshow(self.data[:, :, 0], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
-#        #                     extent=(self.x_border[0], self.x_border[1], self.y_border[0], self.y_border[1]))
+#        #                     extent=(self.alpha_border[0], self.alpha_border[1], self.delta_border[0], self.delta_border[1]))
 #        self.im = plt.imshow(self.data[0,:,:], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
-#                             extent=(self.x_border[0], self.x_border[1], self.y_border[0], self.y_border[1]))
-#        ani = animation.FuncAnimation(fig, self._updatefig, frames=range(len(self.v_axis)), interval=inte, blit=True,
+#                             extent=(self.alpha_border[0], self.alpha_border[1], self.delta_border[0], self.delta_border[1]))
+#        ani = animation.FuncAnimation(fig, self._updatefig, frames=range(len(self.freq_axis)), interval=inte, blit=True,
 #                                      repeat=rep)
 #        plt.show()
 
@@ -174,8 +173,8 @@ class SynCube:
 
     def getSpectrum(self, x, y):
         """ Return an spectrum in x, y """
-        xi = int(round((x - self.x_axis[0]) / self.spec.ang_res))
-        yi = int(round((y - self.y_axis[0]) / self.spec.ang_res))
+        xi = int(round((x - self.alpha_axis[0]) / self.spec.ang_res))
+        yi = int(round((y - self.delta_axis[0]) / self.spec.ang_res))
         return self.data[:, xi, yi]
 
 
@@ -203,9 +202,10 @@ class SynCube:
 class SynSource:
     """A source"""
 
-    def __init__(self, log, name, pos, rad_vel, temp):
+    def __init__(self, log, name, alpha, delta, rad_vel, temp):
         log.write('Source \'' + name + '\' added \n')
-        self.pos = pos
+        self.alpha = alpha
+        self.delta = delta
         self.name = name
         self.rad_vel = rad_vel
         self.temp = temp
@@ -233,33 +233,33 @@ class SynSource:
         sy = form[2]
         theta = form[3]
         r = 3 * math.sqrt(sx ** 2 + sy ** 2)
-        x_mesh, y_mesh = np.meshgrid(cube.x_axis, cube.y_axis, sparse=False, indexing='xy')
-        Xc = x_mesh.flatten() - self.pos[0] * np.ones(len(cube.x_axis) * len(cube.y_axis))
-        Yc = y_mesh.flatten() - self.pos[1] * np.ones(len(cube.x_axis) * len(cube.y_axis))
+        alpha_mesh, delta_mesh = np.meshgrid(cube.alpha_axis, cube.delta_axis, sparse=False, indexing='xy')
+        Xc = alpha_mesh.flatten() - self.alpha * np.ones(len(cube.alpha_axis) * len(cube.delta_axis))
+        Yc = delta_mesh.flatten() - self.delta * np.ones(len(cube.alpha_axis) * len(cube.delta_axis))
         XX = (Xc) * math.cos(theta) - (Yc) * math.sin(theta);
         YY = (Xc) * math.sin(theta) + (Yc) * math.cos(theta);
         u = (XX / sx) ** 2 + (YY / sy) ** 2;
         sol = sx * sy * np.exp(-u / 2) / (2 * math.pi);
-        res = np.transpose(np.reshape(sol, (len(cube.y_axis), len(cube.y_axis))))
+        res = np.transpose(np.reshape(sol, (len(cube.delta_axis), len(cube.delta_axis))))
         res=res/res.max()
         return res
 
     def emission(self, log, cube, inten_group, inten_values):
         log.write('Loading visible lines in band ' + cube.band + ' (rad_vel=' + str(self.rad_vel) + ')\n')
         db=lite.connect('db/lines.db')
-        #lines = self.loadLines(cube.band, cube.v_border[0], cube.v_border[1], self.rad_vel)
+        #lines = self.loadLines(cube.band, cube.freq_border[0], cube.freq_border[1], self.rad_vel)
         for struct in self.structs:
             struct.clear()
             log.write(' --> Struct Name: ' + struct.code + '\n')
             struct.setTemplate(self.genSurface(struct.spa_form, cube))
             fwhm = struct.spe_form[1]
             shape = struct.spe_form[2]
-            v_init_corr = cube.v_border[0]*1000.0/(1 + self.rad_vel*1000.0/SPEED_OF_LIGHT)
-            v_end_corr = cube.v_border[1]*1000.0/(1 + self.rad_vel*1000.0/SPEED_OF_LIGHT)
+            freq_init_corr = cube.freq_border[0]*1000.0/(1 + self.rad_vel*1000.0/SPEED_OF_LIGHT)
+            freq_end_corr = cube.freq_border[1]*1000.0/(1 + self.rad_vel*1000.0/SPEED_OF_LIGHT)
 
             for mol in struct.intens:
                 log.write("SQL SENTENCE:\n")
-                select="SELECT * FROM Lines WHERE SPECIES like '"+mol+"' AND FREQ > "+str(v_init_corr)+" AND FREQ < "+str(v_end_corr)
+                select="SELECT * FROM Lines WHERE SPECIES like '"+mol+"' AND FREQ > "+str(freq_init_corr)+" AND FREQ < "+str(freq_end_corr)
                 log.write(select+'\n')
                 resp=db.execute(select)
                 linlist=resp.fetchall()
@@ -289,18 +289,18 @@ class SynSource:
                     distro=list()
                     for idx in range(window[0], window[1]):
                         # cube.data[:, :, idx] += struct.template * temp * exp(
-                        #    (-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
-                        distro.append(np.exp((-0.5 * (cube.v_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape))))
+                        #    (-0.5 * (cube.freq_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape)))
+                        distro.append(np.exp((-0.5 * (cube.freq_axis[idx] - freq / 1000.0) ** 2) / (sigma ** (2 * shape))))
                     distro=distro/max(distro)
                     #log.write(str(distro)+'\n')
                     for idx in range(window[0], window[1]):
                         cube.data[idx] = cube.data[idx] + struct.template * temp * distro[idx-window[0]]
 
 
-#    def loadLines(self, band, v_init, v_end, rad_vel):
+#    def loadLines(self, band, freq_init, freq_end, rad_vel):
 #        # TODO: Read from a database using SQLINE (SS Group)
-#        v_init_corr = (1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
-#        v_end_corr = (1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_end
+#        freq_init_corr = (1 + rad_vel*1000.0/SPEED_OF_LIGHT)*freq_init
+#        freq_end_corr = (1 + rad_vel*1000.0/SPEED_OF_LIGHT)*freq_end
 #        location = './votables/band' + band + '.xml'
 #        tbl = parse_single_table(location).to_table()
 #        print type(tbl)
@@ -319,15 +319,15 @@ class SynUniverse:
     def setConf(self, log, univ):
         self.conf = univ
 
-    def addSource(self, log, name, x_pos, y_pos, rad_vel, temp):
-        self.sources[name] = SynSource(log, name, [x_pos, y_pos], rad_vel, temp)
+    def addSource(self, log, name, alpha , delta, rad_vel, temp):
+        self.sources[name] = SynSource(log, name, alpha, delta, rad_vel, temp)
 
     def addStruct(self, log, name, mol_list, spa_form, spe_form):
         self.sources[name].addStruct(log, mol_list, spa_form, spe_form, self.conf)
 
-    def genCube(self, log, name, x_center, y_center, ang_res, ang_fov, v_center, spe_res, spe_bw, filename):
-        cube = SynCube(log, name, self.conf, CubeSpec(x_center, y_center, ang_res, ang_fov, v_center, spe_res, spe_bw))
-        for src in self.sources:
+    def genCube(self, log, name, alpha, delta, freq, ang_res, ang_fov, spe_res, spe_bw, filename):
+        cube = SynCube(log, name, self.conf, CubeSpec(alpha, delta, freq, ang_res, ang_fov, spe_res, spe_bw))
+        for src in self.sources: 
             log.write('   * Source: ' + src + '\n')
             self.sources[src].emission(log, cube, self.conf.inten_group, self.conf.inten_values)
         log.write('   * Adding Noise... \n')
@@ -338,14 +338,14 @@ class SynUniverse:
         # TODO: must be implemented by VU group
         return 0
 
-    def genImage(self, log, name, x_center, y_center, ang_res, ang_fov, filename):
+    def genImage(self, log, name, alpha, delta, ang_res, ang_fov, filename):
         # TODO: must be implemented by the IS group
         return 0
 
 # def loadLines(band):
         # TODO: Read from a database using SQLITE (SS Group)
-        # v_init_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
-        # v_end_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_end
+        # freq_init_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*freq_init
+        # freq_end_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*freq_end
 #        location = './votables/band' + band + '.xml'
 #        tbl = parse_single_table(location)
 #        if isinstance(tbl,pTable):
