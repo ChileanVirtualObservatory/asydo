@@ -280,15 +280,16 @@ def loadLines(band):
         if isinstance(tbl,pTable):
         # tbl.array contiene los datos
         # tbl.field contiene la metadata
-            #db = DataBase()
-            #db.loadFields(tbl.fields)
-            #db.genTable()
+            db = DataBase()
+            db.loadFields(tbl.fields)
+            db.genTable()
             c = 0
             data = tbl.array
             datas = data._data
             print type(datas)
-            for i in datas:
+            for i in datas[0]:
                 print i
+            print datas[0];
             print "hola"
 
         return tbl

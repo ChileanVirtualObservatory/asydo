@@ -13,7 +13,7 @@ SqlEquivalent = {
 class DataBase:
     name = ""
     connected = False
-    fields = {}
+    fields = []
     pointer = None
 
     def Connect(self, name):
@@ -37,7 +37,7 @@ class DataBase:
                 name = f.name
                 description = f.description
                 type = SqlEquivalent[f.datatype]
-                self.fields[name] = (description,type)
+                self.fields.append((name,description,type))
 
     def genTable(self):
         command = "CREATE TABLE Catalogo (ID INT PRIMARY KEY NOT NULL,"
@@ -45,9 +45,8 @@ class DataBase:
         insertmetadata = []
         contador = 0
         for i in self.fields:
-            name = i
+            name,descripcion, tipodato = i
 
-            descripcion, tipodato = self.fields[i]
             if contador != 0:
                 command = command + ", "
 
