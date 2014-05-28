@@ -1,4 +1,5 @@
 import numpy as np
+
 from database import DataBase
 from pylab import *
 from collections import namedtuple
@@ -14,6 +15,9 @@ from scipy import signal
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
+
+import warnings
+warnings.filterwarnings("ignore")
 
 SynConf = namedtuple('SynUniverse',
                      'profile band_freq band_noise inten_group inten_values iso_abun base_abun base_CO')
