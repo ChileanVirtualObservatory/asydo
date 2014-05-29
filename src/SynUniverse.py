@@ -1,22 +1,15 @@
-import numpy as np
-
-from database import DataBase
-from pylab import *
 from collections import namedtuple
 import random
-import string
+import warnings
+
+from pylab import *
 from astropy.io import fits
 from astropy.io.votable import parse_single_table
-from astropy.table import Table
-from astropy.io.votable.tree import Table as pTable
-from astropy.io.votable.tree import Field as pField
-import atpy
-from scipy import signal
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
+from database import DataBase
 
-import warnings
 warnings.filterwarnings("ignore")
 
 SynConf = namedtuple('SynUniverse',
@@ -280,21 +273,9 @@ def loadLines(band):
         #v_init_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_init
         #v_end_corr=(1 + rad_vel*1000.0/SPEED_OF_LIGHT)*v_end
         location = './votables/band' + band + '.xml'
-        tbl = parse_single_table(location)
-        if isinstance(tbl,pTable):
-        # tbl.array contiene los datos
-        # tbl.field contiene la metadata
-            db = DataBase("ASYDOGet.DB")
-            db.loadFields(tbl.fields)
-            db.genTable()
-            c = 0
-            data = tbl.array
+        db = DataBase("ASYDO")
+        db.loadVoTable(location)
 
-            db.insertData(data)
-            #db.deleteDB()
-            print "hola"
-
-        return tbl
 
 
 

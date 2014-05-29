@@ -3,7 +3,8 @@ import sqlite3 as lite
 import sys
 import math
 from astropy.io.votable.tree import Field as pField
-from pprint import pprint
+from astropy.io.votable import parse_single_table
+from astropy.io.votable.tree import Table as pTable
 
 
 
@@ -14,25 +15,30 @@ SqlEquivalent = {
     "boolean":  "BOOLEAN"
 }
 
-
+#USAGE EXAMPLE for single table
+#
+# location = './votables/band2.xml'
+# db = DataBase("ASYDO.sqlite")
+# db.loadVoTable(location)
+#
 class DataBase:
     name = ""
     connected = False
     fields = []
     pointer = None
 
-    def __init__(self, filename):
-        self.name = filename
+    def __init__(self, dbName):
+        self.name = dbName
 
     def connect(self):
         try:
-            self.pointer = lite.connect(self.name)
+            self.pointer = lite.connect(self.name+".sqlite")
             self.connected = True
         except lite.Error, e:
             print "Error %s:" % e.args[0]
             sys.exit(1)
 
-    def Disconnect(self):
+    def disconnect(self):
         if self.pointer:
             self.pointer.close()
             self.connected = False
@@ -47,17 +53,23 @@ class DataBase:
                 self.fields.append((name,description,type))
 
     def printTableDef(self,command):
-        f = open("Table_def", "w")
-        com, content = command.split("(")
-        lines = content.split(",")
-        print command
-        print com
-        map(pprint,lines)
+        #Prints a definition table for the catalog into a txt file
+        f = open(self.name+"-Table_def", "w")
+        columns = ["Name","Description","DataType"]
+        f.write(columns[0].rjust(20) +"\t | \t"+columns[1].ljust(100," ")+ "\t | \t" +columns[2]+"\n")
+        divisor = "".rjust(25,"_")+"|"+ "".rjust(111,"_")+"|"+ "".rjust(20,"_")+"\n"
+        f.write(divisor)
+        for line in command:
+            title, description, dataType = line
+            f.write(title.rjust(20," ") +"\t | \t"+ description.ljust(100," ") +"\t | \t"+ dataType+"\n")
+        f.close()
 
     def genTable(self):
+        #Generates the Catalog and Metada Tables, and populates the latter.
         command = "CREATE TABLE Catalog ("
         metadata = "CREATE TABLE Metadata (Column TEXT NOT NULL, Description TEXT NOT NULL)"
         insertMetadata = []
+        output_command = []
         count = 0
         for i in self.fields:
             name,description, dataType = i
@@ -67,10 +79,15 @@ class DataBase:
 
             command = command + " " + name.replace(" ", "_") + " " + dataType
             command2 = "INSERT INTO Metadata VALUES('" + name + "', '" + description + "')"
+            o_command = (name.replace(" ", "_"), description, dataType)
+
+
             insertMetadata.append(command2)
+            output_command.append(o_command)
             count += 1
 
         command = command + ")"
+        self.printTableDef(output_command)
         self.connect()
 
         self.pointer.execute(command)
@@ -79,11 +96,11 @@ class DataBase:
             self.pointer.execute(com)
         self.pointer.commit()
 
-        self.Disconnect()
+        self.disconnect()
 
-    def genInsertDataCommand(self, data, firstId):
+    def genInsertDataCommand(self, data):
+        #Generates the commands for SQL Insertion
         rawData = data._data
-        id = firstId
         insertData = []
         for line in rawData:
             c = False
@@ -115,12 +132,37 @@ class DataBase:
         return insertData
 
     def insertData(self,data):
-        commands = self.genInsertDataCommand(data,0)
+        #inserts the data into the database
+        commands = self.genInsertDataCommand(data)
         self.connect()
         for com in commands:
-            print com
             self.pointer.execute(com)
         self.pointer.commit()
+
+    def loadVoTable(self,location):
+        #Generates the tables in the DB and loads the data.
+        tbl = parse_single_table(location)
+        if isinstance(tbl,pTable):
+        # tbl.array contiene los datos
+        # tbl.field contiene la metadata
+            self.loadFields(tbl.fields)
+            self.genTable()
+            self.insertData(tbl.array)
+
+    def loadMultipleVoTables(self,locations):
+        #Loads the data of multiple VOTables, generating the definitions from the first VOTable in the location list
+        #It assumes every VOTables has the same columns.
+        tbl = parse_single_table(locations[0])
+        if isinstance(tbl,pTable):
+        # tbl.array contiene los datos
+        # tbl.field contiene la metadata
+            self.loadFields(tbl.fields)
+            self.genTable()
+            for place in locations:
+                currentTable = parse_single_table(place)
+                self.insertData(currentTable.array)
+
+
 
 
 
