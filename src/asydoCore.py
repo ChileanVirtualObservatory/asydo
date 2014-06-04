@@ -366,4 +366,3 @@ class SynUniverse:
 
 
 
-# loadLines("lite")
