@@ -38,12 +38,12 @@ class SplataDBManager:
             self.pointer.close()
             self.connected = False
 
-    def VOGetLines(log, prefix):
+    def VOGetLines(self,log, prefix):
         c = 299792458.0
-        for band in alma_band_freq:
+        for band in self.alma_band_freq:
             log.write('band=' + band + '\n')
-            w_init = c / (alma_band_freq[band][0] * 1000000000.0)
-            w_end = c / (alma_band_freq[band][1] * 1000000000.0)
+            w_init = c / (self.alma_band_freq[band][0] * 1000000000.0)
+            w_end = c / (self.alma_band_freq[band][1] * 1000000000.0)
             data = '?REQUEST=queryData&WAVELENGTH=' + \
                 str(w_init) + '/' + str(w_end) + '&VERB=3'
             curl = self.slap_serv + data.encode('utf-8')

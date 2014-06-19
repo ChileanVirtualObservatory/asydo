@@ -5,6 +5,8 @@ import math
 from astropy.io.votable.tree import Field as pField
 from astropy.io.votable import parse_single_table
 from astropy.io.votable.tree import Table as pTable
+import urllib2
+import csv
 
 
 
@@ -27,6 +29,9 @@ class DataBase:
     fields = []
     pointer = None
 
+    slap_serv = 'https://find.nrao.edu/splata-slap/slap'
+    alma_band_freq = {'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500], '9': [602, 720]}
+
     def __init__(self, dbName):
         self.name = dbName
 
@@ -42,6 +47,26 @@ class DataBase:
         if self.pointer:
             self.pointer.close()
             self.connected = False
+
+    def VOGetLines(self,log, prefix):
+        c = 299792458.0
+        for band in self.alma_band_freq:
+            log.write('band=' + band + '\n')
+            w_init = c / (self.alma_band_freq[band][0] * 1000000000.0)
+            w_end = c / (self.alma_band_freq[band][1] * 1000000000.0)
+            data = '?REQUEST=queryData&WAVELENGTH=' + \
+                str(w_init) + '/' + str(w_end) + '&VERB=3'
+            curl = self.slap_serv + data.encode('utf-8')
+            log.write('  -> Downloading lines via SLAP:\n')
+            log.write('  -> ' + curl + '\n')
+            req = urllib2.Request(curl)
+            response = urllib2.urlopen(req)
+            votable = response.read()
+            stri = prefix + band
+            location = './votables/' + stri + '.xml'
+            f = open(location, 'w')
+            f.write(votable)
+            f.close()
 
     def loadFields(self, fields):
         #recieves the fields from the VOtable and adds them to the class
@@ -75,7 +100,7 @@ class DataBase:
             name,description, dataType = i
 
             if count != 0:
-                command = command + ", "
+                command += ", "
 
             command = command + " " + name.replace(" ", "_") + " " + dataType
             command2 = "INSERT INTO Metadata VALUES('" + name + "', '" + description + "')"
@@ -163,6 +188,35 @@ class DataBase:
                 self.insertData(currentTable.array)
 
 
+    def createDBFromCSV(self, filename):
+        self.Connect()
+        create = "CREATE TABLE Lines(ID INT PRIMARY KEY NOT NULL,SPECIES TEXT,CHEM_NAME TEXT,FREQ REAL,INTENSITY REAL,EL REAL)"
+        drop = "DROP TABLE Lines"
+        with open(filename, 'rb') as csvfile:
+            sreader = csv.reader(csvfile, delimiter=':', quotechar='|')
+            counter=0
+            for row in sreader:
+                if counter == 0:
+                    try:
+                       self.pointer.execute(drop)
+                    except lite.OperationalError:
+                       print "WARNING: Drop failed\n"
+                    self.pointer.execute(create)
+                    counter+=1
+                else:
+                    if len(row) < 10:
+                       continue
+                    species=row[0].replace("'","-")
+                    chname=row[1].replace("'","-")
+                    freq=row[2]
+                    if freq=='':
+                        freq=row[4]
+                    insert="INSERT INTO Lines VALUES("+str(counter)+",'"+species+"','"+chname+\
+                           "',"+freq+","+row[7]+","+row[8]+")"
+                    self.pointer.execute(insert)
+                    counter+=1
+        self.pointer.commit()
+        self.Disconnect()
 
 
 
