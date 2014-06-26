@@ -1,11 +1,14 @@
+import os
 import sqlite3 as lite
 import sys
+import math
 from astropy.io.votable.tree import Field as pField
-import sys
-import urllib
+from astropy.io.votable import parse_single_table
+from astropy.io.votable.tree import Table as pTable
 import urllib2
-import requests
 import csv
+
+
 
 SqlEquivalent = {
     "char":     "TEXT",
@@ -14,26 +17,33 @@ SqlEquivalent = {
     "boolean":  "BOOLEAN"
 }
 
-
-class SplataDBManager:
-
+#USAGE EXAMPLE for single table
+#
+# location = './votables/band2.xml'
+# db = DataBase("ASYDO.sqlite")
+# db.loadVoTable(location)
+#
+class DataBase:
     name = ""
     connected = False
-    fields = {}
+    fields = []
     pointer = None
+
     slap_serv = 'https://find.nrao.edu/splata-slap/slap'
     alma_band_freq = {'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500], '9': [602, 720]}
 
-    def Connect(self, name):
-        self.name = name
+    def __init__(self, dbName):
+        self.name = dbName
+
+    def connect(self):
         try:
-            self.pointer = lite.connect(name)
+            self.pointer = lite.connect(self.name+".sqlite")
             self.connected = True
         except lite.Error, e:
             print "Error %s:" % e.args[0]
             sys.exit(1)
 
-    def Disconnect(self):
+    def disconnect(self):
         if self.pointer:
             self.pointer.close()
             self.connected = False
@@ -58,46 +68,129 @@ class SplataDBManager:
             f.write(votable)
             f.close()
 
-    def VOloadFields(self, fields):
-        # recieves the fields from the VOtable and adds them to the class
+    def loadFields(self, fields):
+        #recieves the fields from the VOtable and adds them to the class
         for f in fields:
             if isinstance(f, pField):
                 name = f.name
                 description = f.description
                 type = SqlEquivalent[f.datatype]
-                self.fields[name] = (description, type)
+                self.fields.append((name,description,type))
 
-    def createDBFromVO(self):
-        command = "CREATE TABLE Catalogo (ID INT PRIMARY KEY NOT NULL,"
-        metadata = "CREATE TABLE Metadata (ID INT PRIMARY KEY NOT NULL,"
-        metadata += "Column TEXT NOT NULL, Description TEXT NOT NULL)"
-        insertmetadata = []
-        contador = 0
+    def printTableDef(self,command):
+        #Prints a definition table for the catalog into a txt file
+        f = open(self.name+"-Table_def", "w")
+        columns = ["Name","Description","DataType"]
+        f.write(columns[0].rjust(20) +"\t | \t"+columns[1].ljust(100," ")+ "\t | \t" +columns[2]+"\n")
+        divisor = "".rjust(25,"_")+"|"+ "".rjust(111,"_")+"|"+ "".rjust(20,"_")+"\n"
+        f.write(divisor)
+        for line in command:
+            title, description, dataType = line
+            f.write(title.rjust(20," ") +"\t | \t"+ description.ljust(100," ") +"\t | \t"+ dataType+"\n")
+        f.close()
+
+    def genTable(self):
+        #Generates the Catalog and Metada Tables, and populates the latter.
+        command = "CREATE TABLE Catalog ("
+        metadata = "CREATE TABLE Metadata (Column TEXT NOT NULL, Description TEXT NOT NULL)"
+        insertMetadata = []
+        output_command = []
+        count = 0
         for i in self.fields:
-            name = i
+            name,description, dataType = i
 
-            descripcion, tipodato = self.fields[i]
-            if contador != 0:
-                command = command + ", "
+            if count != 0:
+                command += ", "
 
-            command = command + " " + name.replace(" ", "_") + " " + tipodato
-            command2 = "INSERT INTO Metadata VALUES(" + str(
-                contador) + ", '" + name + "', '" + descripcion + "')"
-            insertmetadata.append(command2)
-            contador += 1
+            command = command + " " + name.replace(" ", "_") + " " + dataType
+            command2 = "INSERT INTO Metadata VALUES('" + name + "', '" + description + "')"
+            o_command = (name.replace(" ", "_"), description, dataType)
+
+
+            insertMetadata.append(command2)
+            output_command.append(o_command)
+            count += 1
 
         command = command + ")"
-        self.Connect("ASYDOGet.DB")
+        self.printTableDef(output_command)
+        self.connect()
 
         self.pointer.execute(command)
         self.pointer.execute(metadata)
-        for com in insertmetadata:
+        for com in insertMetadata:
             self.pointer.execute(com)
         self.pointer.commit()
-        self.Disconnect()
 
-    def createDBFromCSV(self, filename,output):
-        self.Connect(output)
+        self.disconnect()
+
+    def genInsertDataCommand(self, data):
+        #Generates the commands for SQL Insertion
+        rawData = data._data
+        insertData = []
+        for line in rawData:
+            c = False
+            command = "INSERT INTO Catalog VALUES("
+            for value in line:
+                if c:
+                    command = command + ", "
+                c = True
+                if type(value).__name__ == "str":
+                    temp = value.replace("'","''")
+                    command = command + "'" + temp + "'"
+
+                elif "int" in type(value).__name__ or "float" in type(value).__name__:
+                    if math.isnan(value):
+                        command = command + "'NaN'"
+                    else:
+                        command = command + str(value)
+                elif "bool" in type(value).__name__:
+                    if value:
+                        command = command + str(1)
+                    else:
+                        command = command + str(0)
+                else:
+                    print type(value).__name__
+                    print "Data Type not supported. Data not inserted in database. Exiting now!"
+                    sys.exit()
+            command = command + ")"
+            insertData.append(command)
+        return insertData
+
+    def insertData(self,data):
+        #inserts the data into the database
+        commands = self.genInsertDataCommand(data)
+        self.connect()
+        for com in commands:
+            self.pointer.execute(com)
+        self.pointer.commit()
+
+    def loadVoTable(self,location):
+        #Generates the tables in the DB and loads the data.
+        tbl = parse_single_table(location)
+        if isinstance(tbl,pTable):
+        # tbl.array contiene los datos
+        # tbl.field contiene la metadata
+            self.loadFields(tbl.fields)
+            self.genTable()
+            self.insertData(tbl.array)
+
+    def loadMultipleVoTables(self,locations):
+        #Loads the data of multiple VOTables, generating the definitions from the first VOTable in the location list
+        #It assumes every VOTables has the same columns.
+        tbl = parse_single_table(locations[0])
+        if isinstance(tbl,pTable):
+        # tbl.array contiene los datos
+        # tbl.field contiene la metadata
+            self.loadFields(tbl.fields)
+            self.genTable()
+            for place in locations:
+                currentTable = parse_single_table(place)
+                self.insertData(currentTable.array)
+
+
+    def createDBFromCSV(self, filename):
+        #TODO Generalizar, la creacion de esta tabla es demasiado especifica.
+        self.connect()
         create = "CREATE TABLE Lines(ID INT PRIMARY KEY NOT NULL,SPECIES TEXT,CHEM_NAME TEXT,FREQ REAL,INTENSITY REAL,EL REAL)"
         drop = "DROP TABLE Lines"
         with open(filename, 'rb') as csvfile:
@@ -124,10 +217,12 @@ class SplataDBManager:
                     self.pointer.execute(insert)
                     counter+=1
         self.pointer.commit()
-        self.Disconnect()
+        self.disconnect()
 
 
-mng=SplataDBManager()
-mng.createDBFromCSV('splatalogue.csv','lines.db')
 
+    def deleteDB(self):
+        os.remove(self.name)
 
+dataBase = DataBase("ASYDO")
+dataBase.createDBFromCSV('splatalogue.csv')
