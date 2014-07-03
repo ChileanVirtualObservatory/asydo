@@ -11,30 +11,29 @@ S_FACTOR = 2.3548200450309493820231386529193992754947713787716410 #sqrt(8*ln2) #
 class Source:
     """A source of EM Waves"""
 
-    def __init__(self, log, name, alpha, delta, rad_vel, temp):
+    def __init__(self, log, name, alpha, delta):
         log.write('Source \'' + name + '\' added \n')
+        self.log = log
         self.alpha = alpha
         self.delta = delta
         self.name = name
-        self.rad_vel = rad_vel
-        self.temp = temp
         self.structs = list()
 
-    def addStruct(self, log, mol_list, spa_form, spe_form, conf):
+    def addComponent(self, model):
         code = self.name + '-' + str(len(self.structs) + 1)
-        intens = dict()
-        for mol in mol_list.split(','):
-            abun = random.uniform(conf.base_abun[0], conf.base_abun[1])
-            if mol in ('COv=0', '13COv=0', 'C18O', 'C17O', '13C18O'):
-                abun += conf.base_CO
-            for iso in conf.iso_abun:
-                if iso in mol:
-                    abun *= conf.iso_abun[iso]
-            intens[mol] = abun
-        self.structs.append(Structure(log, code, intens, spa_form, spe_form))
-        log.write('Added to \'' + self.name + '\': molecules ' + str(mol_list) + '\n')
-        log.write('  -> Spatial form  = ' + str(spa_form) + '\n')
-        log.write('  -> Spectral form = ' + str(spe_form) + '\n')
+        #intens = dict()
+        #for mol in mol_list.split(','):
+        #    abun = random.uniform(conf.base_abun[0], conf.base_abun[1])
+        #    if mol in ('COv=0', '13COv=0', 'C18O', 'C17O', '13C18O'):
+        #        abun += conf.base_CO
+        #    for iso in conf.iso_abun:
+        #        if iso in mol:
+        #            abun *= conf.iso_abun[iso]
+        #    intens[mol] = abun
+        self.structs.append(model)
+        #log.write('Added to \'' + self.name + '\': molecules ' + str(mol_list) + '\n')
+        #log.write('  -> Spatial form  = ' + str(spa_form) + '\n')
+        #log.write('  -> Spectral form = ' + str(spe_form) + '\n')
 
     def genSurface(self, form, cube):
         "Create a gaussian surface over a mesh created by x and y axes"
