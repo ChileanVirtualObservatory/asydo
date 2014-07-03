@@ -108,20 +108,3 @@ class Source:
                     for idx in range(window[0], window[1]):
                         cube.data[idx] = cube.data[idx] + struct.template * temp * distro[idx - window[0]]
 
-
-#    def loadLines(self, band, freq_init, freq_end, rad_vel):
-#        # TODO: Read from a database using SQLINE (SS Group)
-#        freq_init_corr = (1 + rad_vel*1000.0/SPEED_OF_LIGHT)*freq_init
-#        freq_end_corr = (1 + rad_vel*1000.0/SPEED_OF_LIGHT)*freq_end
-#        location = './votables/band' + band + '.xml'
-#        tbl = parse_single_table(location).to_table()
-#        print type(tbl)
-
-
-#        return tbl
-
-import sys
-
-log = sys.stdout
-
-casa = Source(log,'P-33SO2', 0.0, 1.0, 150, 300.0)

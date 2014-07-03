@@ -1,4 +1,4 @@
-from asydoCore import *
+from Universe import *
 import sys
 
 rvel=150.0

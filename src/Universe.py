@@ -52,8 +52,8 @@ class Universe:
         return cube
 
     def removeSource(self, log, name):
-        # TODO: must be implemented by VU group
-        return 0
+        self.sources.remove(name)
+        log.write('Removing Source ' + name + '\n')
 
     def genImage(self, log, name, alpha, delta, ang_res, ang_fov, filename):
         # TODO: must be implemented by the IS group

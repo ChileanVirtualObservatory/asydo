@@ -1,4 +1,4 @@
-from asydoCore import *
+from Universe import *
 import matplotlib.pyplot as plt
 import sys
 
