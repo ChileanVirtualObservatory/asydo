@@ -37,8 +37,8 @@ class Universe:
     def setSpec(self, spec):
         self.conf = spec
 
-    def createSource(self, name, alpha , delta):
-        self.sources[name] = Source(self.log, name, alpha, delta)
+    def createSource(self, name, alpha , delta, zeta):
+        self.sources[name] = Source(self.log, name, alpha, delta, zeta)
 
     def addComponent(self, source_name, model):
         self.sources[source_name].addComponent(model)
