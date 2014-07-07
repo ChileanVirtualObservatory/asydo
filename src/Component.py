@@ -14,13 +14,15 @@ class Component:
 
     def setRadialVelocity(self,rvel):
         """Set radial velocity in km/s"""
-        self.z_base=sqrt((1 + rvel*1000/SPEED_OF_LIGHT)/(1 - rvel*1000/SPEED_OF_LIGHT)) -1 ;
+        self.z_base=math.sqrt((1 + rvel*1000/SPEED_OF_LIGHT)/(1 - rvel*1000/SPEED_OF_LIGHT)) -1 ;
 
     def info(self):
-        pass
+        return "(none)"
     
-    def register(self,comp_name):
+    def register(self,comp_name,alpha,delta):
         self.comp_name=comp_name
+        self.alpha=alpha
+        self.delta=delta
 
     def project(self,cube):
         pass

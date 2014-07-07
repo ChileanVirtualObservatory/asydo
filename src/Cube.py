@@ -1,24 +1,31 @@
 import numpy as np
 from astropy.io import fits
+from collections import namedtuple
+
+
 
 DEG2ARCSEC = 3600.0
 MAX_CHANNELS = 9000
 MAX_BW = 2000000.0 # kHz
 
+ALMA_bands={'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500],'9': [602, 720]}
+ALMA_noises={'3': 0.01, '4': 0.012, '6': 0.02, '7': 0.04, '8': 0.08, '9': 0.16}
+
+CubeSpec = namedtuple('CubeSpec', 'alpha delta freq ang_res ang_fov spe_res spe_bw')
+
+
 class Cube:
     """ A synthetic ALMA cube."""
 
 
-    def __init__(self, log, name, conf, spec):
+    def __init__(self, log, name, spec, band_freq=ALMA_bands,band_noises=ALMA_noises):
         """ Parameters:
                  log	: descriptor of a log file
                  name : name of the cube
-                 conf : the SynConf configuration
                  spec	: a CubeSpec specification
             """
         self.name = name
         self.spec = spec
-        self.conf = conf
         log.write('Generating cube ' + name + '\n')
         log.write('  -> Angular Coordinates (deg): ra=' + str(spec.alpha)\
                   + ' dec=' + str(spec.delta) + '\n')
@@ -40,11 +47,10 @@ class Cube:
             log.write('WARNING: max ALMA channels exceeded\n')
         self.freq_axis = np.linspace(self.freq_border[0], self.freq_border[1], self.channels)
         log.write('  -> Spectral (GHz): center=' + str(spec.freq) + ' bandwidth=' + str(self.freq_border) + '\n')
-        log.write('  -> Cube size: ' + str(len(self.alpha_axis)) + ' x ' + str(len(self.delta_axis)) + ' x ' + str(
-            len(self.freq_axis)) + ' \n')
+        log.write('  -> Cube size: ' + str(len(self.alpha_axis)) + ' x ' + str(len(self.delta_axis)) + ' x ' + str(len(self.freq_axis)) + ' \n')
         self.band = 'NO_BAND'
-        for bnd in conf.band_freq:
-            freqs = conf.band_freq[bnd]
+        for bnd in band_freq:
+            freqs = band_freq[bnd]
             if self.freq_border[0] >= freqs[0] and self.freq_border[1] <= freqs[1]:
                 self.band = bnd
                 log.write('  -> Band: ' + bnd + '\n')
@@ -54,25 +60,25 @@ class Cube:
         if self.band == 'NO_BAND':
             noise = 0.0001
         else:
-            noise = self.conf.band_noise[self.band]
+            noise = band_noises[self.band]
         self.data = np.random.random((len(self.freq_axis), len(self.alpha_axis), len(self.delta_axis))) * noise
         self.hdulist = fits.HDUList([self.getCubeHDU()])
 
 
-    def freqWindow(self, freq, fwhm):
-        """ Frequency window.
-                 Given a freq and a fwhm compute returns the range of channels that are affected
-            """
-        factor = 2.0;
-        ldiff = freq - self.freq_border[0] - factor * fwhm;
-        udiff = freq - self.freq_border[0] + factor * fwhm;
-        l_w = 0
-        if (ldiff > 0):
-            l_w = ldiff * 1000000 / self.spec.spe_res
-        l_u = udiff * 1000000 / self.spec.spe_res
-        if l_u > self.channels:
-            l_u = self.channels - 1
-        return (int(l_w), int(l_u))
+#    def freqWindow(self, freq, fwhm):
+#        """ Frequency window.
+#                 Given a freq and a fwhm compute returns the range of channels that are affected
+#            """
+#        factor = 2.0;
+#        ldiff = freq - self.freq_border[0] - factor * fwhm;
+#        udiff = freq - self.freq_border[0] + factor * fwhm;
+#        l_w = 0
+#        if (ldiff > 0):
+#            l_w = ldiff * 1000000 / self.spec.spe_res
+#        l_u = udiff * 1000000 / self.spec.spe_res
+#        if l_u > self.channels:
+#            l_u = self.channels - 1
+#        return (int(l_w), int(l_u))
 
 
 #    def _updatefig(self, j):
@@ -97,8 +103,6 @@ class Cube:
 #        plt.show()
 
 
-
-
     def getSpectrum(self, x, y):
         """ Return an spectrum in x, y """
         xi = int(round((x - self.alpha_axis[0]) / self.spec.ang_res))
@@ -119,7 +123,7 @@ class Cube:
         return hdu
         # self.hdu.writeto(filename, clobber=True)
 
-    def addHDU(self,hdu)
+    def addHDU(self,hdu):
         self.hdulist.append(hdu)
 
     def saveFits(self, sources, filename):

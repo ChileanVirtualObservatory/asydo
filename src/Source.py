@@ -1,6 +1,3 @@
-#SPEED_OF_LIGHT = 299792458.0
-#S_FACTOR = 2.3548200450309493820231386529193992754947713787716410 #sqrt(8*ln2) #TODO Preguntar Profe que es esto?
-
 
 class Source:
     """A source of EM Waves"""
@@ -14,13 +11,13 @@ class Source:
         self.comp = list()
 
     def addComponent(self, model):
-        code = self.name + '-c' + str(len(self.comp) + 1 + '-r' + str(alpha) +'-d'+str(delta))
+        code = self.name + '-c' + str(len(self.comp) + 1) #+ '-r' + str(self.alpha) +'-d'+str(self.delta)
         self.comp.append(model)
-        mode.register(self,code)
-        log.write('Component added to \'' + self.name + '\' (' + code + ')\n')
-        log.write('ModelInfo: '+ model.info() + '\n')
+        model.register(code,self.alpha,self.delta)
+        self.log.write('Component added to \'' + self.name + '\' (' + code + ')\n')
+        self.log.write('ModelInfo: '+ model.info() + '\n')
         
     def project(self, cube):
         for component in self.comp:
-            log.write(' --> Component name: ' + struct.code + '\n')
+            self.log.write(' --> Component name: ' + component.comp_name + '\n')
             component.project(cube);
