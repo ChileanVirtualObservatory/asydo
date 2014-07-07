@@ -37,18 +37,18 @@ class Universe:
     def setSpec(self, spec):
         self.conf = spec
 
-    def createSource(self, name, alpha , delta, zeta):
-        self.sources[name] = Source(self.log, name, alpha, delta, zeta)
+    def createSource(self, name, alpha , delta):
+        self.sources[name] = Source(self.log, name, alpha, delta)
 
     def addComponent(self, source_name, model):
         self.sources[source_name].addComponent(model)
 
-    def genCube(self, name, cubespec,filename) 
-        cube = Cube(self.log, name, self.conf, cubespec, filename)
+    def genCube(self, name, cubespec, filename) 
+        cube = Cube(self.log, name, cubespec, filename)
         for src in self.sources: 
             self.log.write('   * Source: ' + src + '\n')
-            self.sources[src].emission(cube, self.conf.inten_group, self.conf.inten_values)
-        self.log.write('   * Adding Noise... \n')
+            self.sources[src].project(cube)
+        self.log.write('   * Saving FITS: ' + filename + '\n')
         cube.saveFits(self.sources, filename)
         return cube
 

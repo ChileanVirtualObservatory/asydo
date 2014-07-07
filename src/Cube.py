@@ -56,6 +56,7 @@ class Cube:
         else:
             noise = self.conf.band_noise[self.band]
         self.data = np.random.random((len(self.freq_axis), len(self.alpha_axis), len(self.delta_axis))) * noise
+        self.hdulist = fits.HDUList([self.getCubeHDU()])
 
 
     def freqWindow(self, freq, fwhm):
@@ -118,10 +119,8 @@ class Cube:
         return hdu
         # self.hdu.writeto(filename, clobber=True)
 
+    def addHDU(self,hdu)
+        self.hdulist.append(hdu)
+
     def saveFits(self, sources, filename):
-        hdulist = fits.HDUList([self.getCubeHDU()])
-        for src in sources:
-            for struct in sources[src].structs:
-                hdulist.append(struct.getImageHDU())
-                hdulist.append(struct.getTableHDU())
-        hdulist.writeto(filename, clobber=True)
+        self.hdulist.writeto(filename, clobber=True)
