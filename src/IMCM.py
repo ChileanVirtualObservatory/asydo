@@ -7,7 +7,6 @@ import math
 inten_group=[('default'), ('COv=0'), ('13COv=0'), ('HCO+, HC3N, CS, C18O, CH3OH, N2H')]
 inten_values=[[0.1, 2], [20, 60], [5, 20], [1, 10]]
 
-
 default_iso_abundance={'13C': 1.0 / 30, '18O': 1.0 / 60, '17O': 1.0/120, '34S': 1.0 / 30, '33S': 1.0 / 120,'13N': 1.0 / 30, 'D': 1.0 / 30}
 
 class IMCM(Component):
