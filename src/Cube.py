@@ -6,13 +6,12 @@ from collections import namedtuple
 
 DEG2ARCSEC = 3600.0
 MAX_CHANNELS = 9000
-MAX_BW = 2000000.0 # kHz
+MAX_BW = 2000.0 # MHz
 
-ALMA_bands={'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500],'9': [602, 720]}
+ALMA_bands={'3': [88000, 116000], '4': [125000, 163000], '6': [211000, 275000], '7': [275000, 373000], '8': [385000, 500000],'9': [602000, 720000]}
 ALMA_noises={'3': 0.01, '4': 0.012, '6': 0.02, '7': 0.04, '8': 0.08, '9': 0.16}
 
 CubeSpec = namedtuple('CubeSpec', 'alpha delta freq ang_res ang_fov spe_res spe_bw')
-
 
 class Cube:
     """ A synthetic ALMA cube."""
@@ -39,7 +38,7 @@ class Cube:
         if spec.delta > 90 or spec.delta < -90:
             raise Exception('ERROR: invalid coordinate: dec=' + spec.delta)
         log.write('  -> FOV (arcsec): ra=' + str(self.alpha_border) + ' dec=' + str(self.delta_border) + '\n')
-        self.freq_border = [spec.freq - spec.spe_bw / (2.0 * 1000000), spec.freq + spec.spe_bw / (2.0 * 1000000)]
+        self.freq_border = [spec.freq - spec.spe_bw / 2.0, spec.freq + spec.spe_bw / 2.0]
         if spec.spe_bw > MAX_BW:
             log.write('WARNING: max ALMA bandwidth exceeded\n')
         self.channels = round(spec.spe_bw / spec.spe_res)
@@ -58,27 +57,11 @@ class Cube:
             log.write('WARNING: not in a valid ALMA band\n')
         # self.data = zeros((len(self.alpha_axis), len(self.delta_axis), len(self.freq_axis)))
         if self.band == 'NO_BAND':
-            noise = 0.0001
+            self.noise = 0.0001
         else:
-            noise = band_noises[self.band]
-        self.data = np.random.random((len(self.freq_axis), len(self.alpha_axis), len(self.delta_axis))) * noise
+            self.noise = band_noises[self.band]
+        self.data = np.random.random((len(self.freq_axis), len(self.alpha_axis), len(self.delta_axis))) * self.noise
         self.hdulist = fits.HDUList([self.getCubeHDU()])
-
-
-#    def freqWindow(self, freq, fwhm):
-#        """ Frequency window.
-#                 Given a freq and a fwhm compute returns the range of channels that are affected
-#            """
-#        factor = 2.0;
-#        ldiff = freq - self.freq_border[0] - factor * fwhm;
-#        udiff = freq - self.freq_border[0] + factor * fwhm;
-#        l_w = 0
-#        if (ldiff > 0):
-#            l_w = ldiff * 1000000 / self.spec.spe_res
-#        l_u = udiff * 1000000 / self.spec.spe_res
-#        if l_u > self.channels:
-#            l_u = self.channels - 1
-#        return (int(l_w), int(l_u))
 
 
 #    def _updatefig(self, j):

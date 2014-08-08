@@ -34,7 +34,7 @@ class IMCM(Component):
 
     def info(self):
         #TODO...
-        return "z = "+str(self.z_base)
+        return "z = "+str(self.z)
 
     def project(self, cube):
         arr_code = []
@@ -47,10 +47,10 @@ class IMCM(Component):
         self.log.write('   * Generating spatial form\n') # TODO More info
         T,Tbord=genSurface(self.spa_form,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis)
         self.log.write('   * Generating line form\n') #TODO More info
-        self.log.write('   * Loading and correcting lines with z=' + str(self.z_base) + ')\n')
+        self.log.write('   * Loading and correcting lines with z=' + str(self.z) + ')\n')
         db = lite.connect('db/lines.db')
-        freq_init_corr = cube.freq_border[0] * 1000.0 / (1 + self.z_base)
-        freq_end_corr = cube.freq_border[1] * 1000.0 / (1 + self.z_base)
+        freq_init_corr = cube.freq_border[0] / (1 + self.z)
+        freq_end_corr = cube.freq_border[1] / (1 + self.z)
         counter=0
         for mol in self.intens:
             self.log.write("SQL SENTENCE:\n")
@@ -67,14 +67,13 @@ class IMCM(Component):
                 counter+=1
                 trans_temp = lin[5]
                 temp = np.exp(-abs(trans_temp - self.temp) / self.temp) * rinte
-                freq = (1 + self.z_base) * lin[3]
+                freq = (1 + self.z) * lin[3] # CDMS Catalog is in Mhz :D
                 L,Lbord=genLine(self.spe_form,freq,cube.freq_axis)
-                #TODO: change broadening depending of the frequency
                 self.log.write('E: ' + str(lin[2]) + ' (' + str(lin[1]) + ') at ' + str(freq) + ' Mhz, T = exp(-|' \
                           + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(
                     rinte) + ' = ' + str(temp) + ' K  ' + '\n')
                 for idx in range(Lbord[0], Lbord[1]):
-                    cube.data[idx] = cube.data[idx] + T * temp * L[idx]# - window[0]]
+                    cube.data[idx] = cube.data[idx] + T * temp * L[idx - Lbord[0]]
                 arr_code.append(self.comp_name + '-r' + str(self.alpha) +'-d'+str(self.delta) + "-l" + str(counter))
                 arr_mol.append(mol)
                 arr_temp.append(temp)
