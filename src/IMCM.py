@@ -1,6 +1,12 @@
 from Component import *
 from Surface import *
 from Line import *
+import sqlite3 as lite
+import random
+from astropy.io import fits
+import numpy as np
+
+import math
 
 #TODO: parametrize this!
 inten_group=[('default'), ('COv=0'), ('13COv=0'), ('HCO+, HC3N, CS, C18O, CH3OH, N2H')]

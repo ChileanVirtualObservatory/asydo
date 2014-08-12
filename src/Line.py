@@ -1,4 +1,3 @@
-
 from scipy import pi,sqrt,exp
 from scipy.special import erf
 
