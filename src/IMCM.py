@@ -1,6 +1,7 @@
 from Component import *
 from Surface import *
 from Line import *
+from Gradient import *
 import sqlite3 as lite
 import random
 from astropy.io import fits

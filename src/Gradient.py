@@ -1,7 +1,7 @@
 import math
 import numpy as np
 
-def genGradient(form,alpha,delta,alpha_axis,delta_axis,Tbord)
+def genGradient(form,alpha,delta,alpha_axis,delta_axis,Tbord):
         "Create a gradient matrix"
 #        sx = form[1]
 #        sy = form[2]
