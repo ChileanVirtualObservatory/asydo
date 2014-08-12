@@ -1,8 +1,5 @@
-from astropy.io import fits
-import random
-import numpy as np
 import math
-import sqlite3 as lite
+
 
 SPEED_OF_LIGHT = 299792458.0
 KILO = 1000
@@ -23,9 +20,9 @@ class Component:
         return "(none)"
     
     def register(self,comp_name,alpha,delta):
-        self.comp_name=comp_name
-        self.alpha=alpha
-        self.delta=delta
+        self.comp_name = comp_name
+        self.alpha = alpha
+        self.delta = delta
 
     def project(self,cube):
         pass

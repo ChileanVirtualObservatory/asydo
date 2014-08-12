@@ -1,15 +1,6 @@
 from Source import *
 from Cube import *
 
-import numpy as np
-
-import string
-from astropy.io import fits
-from scipy import signal
-import matplotlib.animation as animation
-import matplotlib.pyplot as plt
-
-
 #UniverseSpec = namedtuple('SynUniverse','profile band_freq band_noise inten_group inten_values iso_abun base_abun base_CO')
 #CubeSpec = namedtuple('CubeSpec', 'alpha delta freq ang_res ang_fov spe_res spe_bw')
 
@@ -46,6 +37,6 @@ class Universe:
         return cube
 
     def removeSource(self, name):
-        self.log.write('Removing source '+source)
-        return sources.remove(name)
+        self.log.write('Removing source '+name)
+        return self.sources.remove(name)
 
