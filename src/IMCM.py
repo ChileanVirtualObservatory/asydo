@@ -17,7 +17,7 @@ default_iso_abundance={'13C': 1.0 / 30, '18O': 1.0 / 60, '17O': 1.0/120, '34S': 
 class IMCM(Component):
     
     """ Interstellar Molecular Cloud Model """
-    def __init__(self, log, mol_list, temp, spa_form, spe_form, z_grad,z_base=0.0, abun_max=10 ** -5,abun_min=10 ** -6,abun_CO=1.0,iso_abun=default_iso_abundance):
+    def __init__(self, log, mol_list, temp, spa_form, spe_form, z_grad,z_base=0.0, abun_max=10 ** -5, abun_min=10 ** -6, abun_CO=1.0, iso_abun=default_iso_abundance):
         Component.__init__(self,log,z_base)
         self.spa_form = spa_form
         self.spe_form = spe_form
@@ -33,7 +33,7 @@ class IMCM(Component):
                     abun *= iso_abun[iso]
             self.intens[mol] = abun
 
-    def changeIntensities(self,itens):
+    def changeIntensities(self,intens):
         '''User defined dictionary in the form {molecule: intensity}'''
         self.intens=intens;
 
@@ -57,17 +57,25 @@ class IMCM(Component):
         freq_init_corr = cube.freq_border[0] / (1 + self.z)
         freq_end_corr = cube.freq_border[1] / (1 + self.z)
         counter=0
+
         for mol in self.intens:
+            # For each molecule specified in the dictionary
+            # load its spectral lines
+
             self.log.write("SQL SENTENCE:\n")
             select = "SELECT * FROM Lines WHERE SPECIES like '" + mol + "' AND FREQ > " + str(freq_init_corr) + " AND FREQ < " + str(freq_end_corr)
             self.log.write(select + '\n')
             resp = db.execute(select)
-            linlist = resp.fetchall()
+
+            linlist = resp.fetchall()        # Selected spectral lines for this molecule
+
+
             rinte = inten_values[0]
             for j in range(len(inten_group)): # TODO baaad python...  
                 if mol in inten_group[j]:
                     rinte = inten_values[j]
             rinte = random.uniform(rinte[0], rinte[1])
+
             for lin in linlist:
                 counter+=1
                 trans_temp = lin[5]
@@ -86,9 +94,12 @@ class IMCM(Component):
                 arr_rest_freq.append(str(lin[3]))
                 arr_obs_freq.append(freq)
                 arr_fwhm.append(self.spe_form[1])
+
         hdu = fits.PrimaryHDU()
         hdu.data = T;
         #TODO Add redshift
+
+        #Add Metadada to the FIT
         tbhdu = fits.new_table(fits.ColDefs([
                      fits.Column(name='line_code',format='60A',array=arr_code), 
                      fits.Column(name='mol',format='20A', array=arr_mol),\
@@ -97,6 +108,7 @@ class IMCM(Component):
                      fits.Column(name='obs_freq',format='D', array=arr_obs_freq),\
                      fits.Column(name='fwhm',format='D', array=arr_fwhm),\
                      fits.Column(name='temp',format='D', array=arr_temp)]))
+
         cube.addHDU(hdu)
         cube.addHDU(tbhdu)
 

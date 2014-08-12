@@ -20,9 +20,9 @@ class Component:
         return "(none)"
     
     def register(self,comp_name,alpha,delta):
-        self.comp_name=comp_name
-        self.alpha=alpha
-        self.delta=delta
+        self.comp_name = comp_name
+        self.alpha = alpha
+        self.delta = delta
 
     def project(self,cube):
         pass

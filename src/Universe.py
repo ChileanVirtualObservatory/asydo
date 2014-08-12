@@ -1,9 +1,6 @@
 from Source import *
 from Cube import *
 
-
-
-
 #UniverseSpec = namedtuple('SynUniverse','profile band_freq band_noise inten_group inten_values iso_abun base_abun base_CO')
 #CubeSpec = namedtuple('CubeSpec', 'alpha delta freq ang_res ang_fov spe_res spe_bw')
 
@@ -18,7 +15,7 @@ from Cube import *
 #                          1.0)
 
 class Universe:
-    """Synthetic Cube Generation Class"""
+    """A synthetic universe where to put synthetic objects."""
 
     def __init__(self, log):
         self.log=log
@@ -40,6 +37,6 @@ class Universe:
         return cube
 
     def removeSource(self, name):
-        self.log.write('Removing source '+source)
-        return sources.remove(name)
+        self.log.write('Removing source '+name)
+        return self.sources.remove(name)
 
