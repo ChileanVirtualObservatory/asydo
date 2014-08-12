@@ -45,6 +45,9 @@ class IMCM(Component):
         arr_temp = []
         self.log.write('   * Generating spatial form\n') # TODO More info
         T,Tbord=genSurface(self.spa_form,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis)
+        
+        G=genGradient(self.z_grad,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis,Tbord)
+
         self.log.write('   * Generating line form\n') #TODO More info
         self.log.write('   * Loading and correcting lines with z=' + str(self.z) + ')\n')
         db = lite.connect('db/lines.db')
@@ -63,7 +66,6 @@ class IMCM(Component):
 
             linlist = resp.fetchall()        # Selected spectral lines for this molecule
 
-
             rinte = inten_values[0]
             for j in range(len(inten_group)): # TODO baaad python...  
                 if mol in inten_group[j]:
@@ -74,7 +76,7 @@ class IMCM(Component):
                 counter+=1
                 trans_temp = lin[5]
                 temp = np.exp(-abs(trans_temp - self.temp) / self.temp) * rinte
-                freq = (1 + self.z) * lin[3] # CDMS Catalog is in Mhz :D
+                freq = (1 + self.z) * lin[3] # Catalogs must be in Mhz 
                 L,Lbord=genLine(self.spe_form,freq,cube.freq_axis)
                 self.log.write('E: ' + str(lin[2]) + ' (' + str(lin[1]) + ') at ' + str(freq) + ' Mhz, T = exp(-|' \
                           + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(
