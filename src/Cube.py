@@ -55,7 +55,6 @@ class Cube:
                 log.write('  -> Band: ' + bnd + '\n')
         if self.band == 'NO_BAND':
             log.write('WARNING: not in a valid ALMA band\n')
-        # self.data = zeros((len(self.alpha_axis), len(self.delta_axis), len(self.freq_axis)))
         if self.band == 'NO_BAND':
             self.noise = 0.0001
         else:
@@ -63,6 +62,31 @@ class Cube:
         self.data = np.random.random((len(self.freq_axis), len(self.alpha_axis), len(self.delta_axis))) * self.noise
         self.hdulist = fits.HDUList([self.getCubeHDU()])
 
+
+    def getSpectrum(self, x, y):
+        """ Return an spectrum in x, y """
+        xi = int(round((x - self.alpha_axis[0]) / self.spec.ang_res))
+        yi = int(round((y - self.delta_axis[0]) / self.spec.ang_res))
+        return self.data[:, xi, yi]
+
+
+    def getCubeHDU(self):
+        """ Write the final FITS file in filename """
+        prihdr = fits.Header()
+        prihdr['AUTHOR'] = 'Astronomical SYnthetic Data Observatory'
+        prihdr['COMMENT'] = "Here's some commentary about this FITS file."
+        prihdr['SIMPLE'] = True
+        # prihdr['BITPIX'] = 8
+        prihdr['NAXIS'] = 3
+        hdu = fits.PrimaryHDU(header=prihdr)
+        hdu.data = self.data
+        return hdu
+
+    def addHDU(self,hdu):
+        self.hdulist.append(hdu)
+
+    def saveFits(self, sources, filename):
+        self.hdulist.writeto(filename, clobber=True)
 
 #    def _updatefig(self, j):
 #        """ Animate helper function """
@@ -84,30 +108,3 @@ class Cube:
 #        ani = animation.FuncAnimation(fig, self._updatefig, frames=range(len(self.freq_axis)), interval=inte, blit=True,
 #                                      repeat=rep)
 #        plt.show()
-
-
-    def getSpectrum(self, x, y):
-        """ Return an spectrum in x, y """
-        xi = int(round((x - self.alpha_axis[0]) / self.spec.ang_res))
-        yi = int(round((y - self.delta_axis[0]) / self.spec.ang_res))
-        return self.data[:, xi, yi]
-
-
-    def getCubeHDU(self):
-        """ Write the final FITS file in filename """
-        prihdr = fits.Header()
-        prihdr['AUTHOR'] = 'Astronomical SYnthetic Data Observatory'
-        prihdr['COMMENT'] = "Here's some commentary about this FITS file."
-        prihdr['SIMPLE'] = True
-        # prihdr['BITPIX'] = 8
-        prihdr['NAXIS'] = 3
-        hdu = fits.PrimaryHDU(header=prihdr)
-        hdu.data = self.data
-        return hdu
-        # self.hdu.writeto(filename, clobber=True)
-
-    def addHDU(self,hdu):
-        self.hdulist.append(hdu)
-
-    def saveFits(self, sources, filename):
-        self.hdulist.writeto(filename, clobber=True)
