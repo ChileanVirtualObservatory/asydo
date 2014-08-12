@@ -1,8 +1,5 @@
-from astropy.io import fits
-import random
-import numpy as np
 import math
-import sqlite3 as lite
+
 
 SPEED_OF_LIGHT = 299792458.0
 KILO = 1000

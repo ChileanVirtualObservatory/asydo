@@ -1,6 +1,11 @@
 from Component import *
 from Surface import *
 from Line import *
+import sqlite3 as lite
+import random
+from astropy.io import fits
+import numpy as np
+
 import math
 
 #TODO: parametrize this!

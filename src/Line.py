@@ -1,8 +1,5 @@
-#from math import sqrt,log,pi,exp
-from scipy import linspace
 from scipy import pi,sqrt,exp
 from scipy.special import erf
-import numpy as np
 
 SPEED_OF_LIGHT = 299792458.0
 S_FACTOR = 2.3548200450309493820231386529193992754947713787716410 #sqrt(8*ln2)
