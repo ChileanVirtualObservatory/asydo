@@ -1,0 +1,6 @@
+#!/bin/bash
+./CSV.sh
+python asydoDB.py
+mv ASYDO.sqlite lines.db
+
+
