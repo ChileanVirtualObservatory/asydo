@@ -48,7 +48,7 @@ elif (len(sys.argv)>2):
         message = "No range specified, using Default range (88 Ghz to 720 Ghz)\n"
         if len(sys.argv) == 5 and sys.argv[3] == "-R":
             w_range = sys.argv[4].split(":")
-            message = "The specified range is ("+w_range[0]+" to " + w_range[1]+")\n"
+            message = "The specified range is ("+w_range[0]+" Mhz to " + w_range[1]+" Mhz)\n"
 
         log.write(message)
         database.deleteDB()

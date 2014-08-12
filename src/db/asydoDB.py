@@ -48,11 +48,12 @@ class DataBase:
             self.pointer.close()
             self.connected = False
 
-    def VOGetLines(self,log, source, w_range = [88,720]):
+    def VOGetLines(self,log, source, w_range = [88000,720000]):
+        #w_range is in Mhz
         c = 299792458.0
         log.write('Importing lines in range from %s to %s \n' % (w_range[0], w_range[1]))
-        w_init = c / (int(w_range[0]) * 1000000000.0)
-        w_end = c / (int(w_range[1]) * 1000000000.0)
+        w_init = c / (int(w_range[0]) * 1000000.0)
+        w_end = c / (int(w_range[1]) * 1000000.0)
         data = '?REQUEST=queryData&WAVELENGTH=' + \
             str(w_init) + '/' + str(w_end) + '&VERB=3'
         curl = source + data.encode('utf-8')
