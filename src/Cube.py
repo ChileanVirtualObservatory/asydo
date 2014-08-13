@@ -60,7 +60,7 @@ class Cube:
             self.noise = 0.0001
         else:
             self.noise = band_noises[self.band]
-        self.data = np.random.random((len(self.alpha_axis), len(self.delta_axis), len(self.freq_axis))) * self.noise
+        self.data = np.random.random((len(self.freq_axis),len(self.delta_axis),len(self.alpha_axis))) * self.noise
         self.hdulist = fits.HDUList([self.getCubeHDU()])
 
 
@@ -68,7 +68,7 @@ class Cube:
         """ Return an spectrum in x, y """
         xi = int(round((x - self.alpha_axis[0]) / (self.spec.ang_res/DEG2ARCSEC)))
         yi = int(round((y - self.delta_axis[0]) / (self.spec.ang_res/DEG2ARCSEC)))
-        return self.data[xi, yi, : ]
+        return self.data[:,yi,xi]
 
 
     def getCubeHDU(self):
@@ -92,7 +92,7 @@ class Cube:
     def _updatefig(self, j):
         """ Animate helper function """
         # self.im.set_array(self.data[:, :, j])
-        self.im.set_array(np.transpose(self.data[:,:,j]))
+        self.im.set_array(self.data[j,:,:])
         return self.im,
 
     def animate(self, inte, rep=True):
@@ -103,7 +103,7 @@ class Cube:
         fig = plt.figure()
         # self.im = plt.imshow(self.data[:, :, 0], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
         #                     extent=(self.alpha_border[0], self.alpha_border[1], self.delta_border[0], self.delta_border[1]))
-        self.im = plt.imshow(np.transpose(self.data[:,:,0]), cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
+        self.im = plt.imshow(self.data[0,:,:], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
                              extent=(self.alpha_border[0], self.alpha_border[1], self.delta_border[0], self.delta_border[1]))
         ani = animation.FuncAnimation(fig, self._updatefig, frames=range(len(self.freq_axis)), interval=inte, blit=True,
                                       repeat=rep)

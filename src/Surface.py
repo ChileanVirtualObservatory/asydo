@@ -38,7 +38,7 @@ def genSurface(form,alpha,delta,alpha_axis,delta_axis):
     xbord,ybord=spatialWindow(alpha,delta,spx,spy,alpha_axis,delta_axis)
     print xbord,ybord
     if xbord[0]>xbord[1] or ybord[0]>ybord[1]:
-        return False,[xbord,ybord]
+        return False,[ybord,xbord]
     alpha_axis=alpha_axis[xbord[0]:xbord[1]]
     delta_axis=delta_axis[ybord[0]:ybord[1]]
 #    r = 3 * math.sqrt(sx ** 2 + sy ** 2)
@@ -50,8 +50,8 @@ def genSurface(form,alpha,delta,alpha_axis,delta_axis):
     u = (XX / sx) ** 2 + (YY / sy) ** 2;
     sol = sx * sy * np.exp(-u / 2) / (2 * math.pi);
     #res = np.transpose(np.reshape(sol, (len(alpha_axis), len(delta_axis))))
-    res = np.transpose(np.reshape(sol, (len(delta_axis), len(alpha_axis))))
+    res = np.reshape(sol, (len(delta_axis), len(alpha_axis)))
     res = res / res.max()
-    return res,[xbord,ybord]
+    return res,[ybord,xbord]
 
 

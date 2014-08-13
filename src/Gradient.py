@@ -8,8 +8,8 @@ def genGradient(form,alpha,delta,alpha_axis,delta_axis,Tbord):
         gtype = form[0]
         theta = form[1]
         km_sarcs = form[2]
-        xbord=Tbord[0]
-        ybord=Tbord[1]
+        ybord=Tbord[0]
+        xbord=Tbord[1]
         alpha_axis=alpha_axis[xbord[0]:xbord[1]]
         delta_axis=delta_axis[ybord[0]:ybord[1]]
         alpha_mesh, delta_mesh = np.meshgrid(alpha_axis, delta_axis, sparse = False, indexing = 'xy')
@@ -22,7 +22,7 @@ def genGradient(form,alpha,delta,alpha_axis,delta_axis,Tbord):
         #print XX
         #print YY
         #u = km_sarcs*XX # + YY)
-        res = np.transpose(np.reshape(km_sarcs*XX, (len(delta_axis), len(alpha_axis))))
+        res = np.reshape(km_sarcs*XX, (len(delta_axis), len(alpha_axis)))
         #print res
         return res
 

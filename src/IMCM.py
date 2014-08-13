@@ -47,15 +47,15 @@ class IMCM(Component):
         arr_mol = []
         arr_chname = []
         arr_rest_freq = []
-        arr_obs_freq = []
+        arr_rad_vel = []
         arr_fwhm = []
         arr_temp = []
         self.log.write('   * Generating spatial form\n') # TODO More info
         T,Tbord=genSurface(self.spa_form,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis)
         if isinstance(T,bool):
            return
-        xbord=Tbord[0]
-        ybord=Tbord[1]
+        ybord=Tbord[0]
+        xbord=Tbord[1]
         G=genGradient(self.z_grad,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis,Tbord)
         #print G
         self.log.write('   * Generating line form\n') #TODO More info
@@ -93,11 +93,11 @@ class IMCM(Component):
 
                 for xp in range(xbord[0],xbord[1]):
                     for yp in range(ybord[0],ybord[1]):
-                        freq = math.sqrt((1 + (self.rv+G[xp-xbord[0],yp-ybord[0]])*KILO/SPEED_OF_LIGHT)/(1 - (self.rv+G[xp-xbord[0],yp-ybord[0]])*KILO/SPEED_OF_LIGHT))*lin[3]
+                        freq = math.sqrt((1 + (self.rv+G[yp-ybord[0],xp-xbord[0]])*KILO/SPEED_OF_LIGHT)/(1 - (self.rv+G[yp-ybord[0],xp-xbord[0]])*KILO/SPEED_OF_LIGHT))*lin[3]
                         L,Lbord=genLine(self.spe_form,freq,cube.freq_axis)
                         if isinstance(L,bool):
                            continue
-                        cube.data[xp,yp,Lbord[0]:Lbord[1]] = cube.data[xp,yp,Lbord[0]:Lbord[1]] + T[xp-xbord[0],yp-ybord[0]] * temp * L
+                        cube.data[Lbord[0]:Lbord[1],yp,xp] = cube.data[Lbord[0]:Lbord[1],yp,xp] + T[yp-ybord[0],xp-xbord[0]] * temp * L
                         
                 #for idx in range(Lbord[0], Lbord[1]):
                 #    cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] = cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] + T * temp * L[idx - Lbord[0]]
@@ -106,12 +106,14 @@ class IMCM(Component):
                 arr_temp.append(temp)
                 arr_chname.append(str(lin[2]))
                 arr_rest_freq.append(str(lin[3]))
-                arr_obs_freq.append(freq)
+                arr_rad_vel.append(self.rv)
                 arr_fwhm.append(self.spe_form[1])
 
-        hdu = fits.PrimaryHDU()
-        hdu.data = T;
+        hduT = fits.PrimaryHDU()
+        hduT.data = T;
         #TODO Add redshift
+        hduG = fits.PrimaryHDU()
+        hduG.data = G;
 
         #Add Metadada to the FIT
         tbhdu = fits.new_table(fits.ColDefs([
@@ -119,11 +121,12 @@ class IMCM(Component):
                      fits.Column(name='mol',format='20A', array=arr_mol),\
                      fits.Column(name='chname',format='40A', array=arr_chname),\
                      fits.Column(name='rest_freq',format='D', array=arr_rest_freq),\
-                     fits.Column(name='obs_freq',format='D', array=arr_obs_freq),\
+                     fits.Column(name='rad_vel',format='D', array=arr_rad_vel),\
                      fits.Column(name='fwhm',format='D', array=arr_fwhm),\
                      fits.Column(name='temp',format='D', array=arr_temp)]))
 
-        cube.addHDU(hdu)
+        cube.addHDU(hduT)
+        cube.addHDU(hduG)
         cube.addHDU(tbhdu)
 
 
