@@ -7,7 +7,7 @@ from asydoDB import DataBase
 
 default_url = "http://www.csrg.cl/~maray/splatalogue.csv"
 default_csv_name = "lines2.csv"
-default_db_name = "ASYDO"
+default_db_name = "Lines"
 csv = False
 URI = ""
 log = sys.stdout
