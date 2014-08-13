@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from pylab import *
 DEG2ARCSEC = 3600.0
 
 def spatialWindow(alpha,delta,spx,spy,alpha_axis,delta_axis):
@@ -30,13 +31,13 @@ def spatialWindow(alpha,delta,spx,spy,alpha_axis,delta_axis):
 
 def genSurface(form,alpha,delta,alpha_axis,delta_axis):
     "Create a gaussian surface over a mesh created by x and y axes"
+    stype = form[0]
     sx = form[1]/DEG2ARCSEC
     sy = form[2]/DEG2ARCSEC
     theta = form[3]
     spx= abs(3*sx*math.cos(theta)) + abs(3*sy*math.sin(theta))
     spy= abs(3*sx*math.sin(theta)) + abs(3*sy*math.cos(theta))
     xbord,ybord=spatialWindow(alpha,delta,spx,spy,alpha_axis,delta_axis)
-    print xbord,ybord
     if xbord[0]>xbord[1] or ybord[0]>ybord[1]:
         return False,[ybord,xbord]
     alpha_axis=alpha_axis[xbord[0]:xbord[1]]
@@ -45,11 +46,17 @@ def genSurface(form,alpha,delta,alpha_axis,delta_axis):
     alpha_mesh, delta_mesh = np.meshgrid(alpha_axis, delta_axis, sparse = False, indexing = 'xy')
     Xc = alpha_mesh.flatten() - alpha * np.ones(len(alpha_axis) * len(delta_axis))
     Yc = delta_mesh.flatten() - delta * np.ones(len(alpha_axis) * len(delta_axis))
-    XX = (Xc) * math.cos(-theta) - (Yc) * math.sin(-theta);
-    YY = (Xc) * math.sin(-theta) + (Yc) * math.cos(-theta);
-    u = (XX / sx) ** 2 + (YY / sy) ** 2;
-    sol = sx * sy * np.exp(-u / 2) / (2 * math.pi);
-    #res = np.transpose(np.reshape(sol, (len(alpha_axis), len(delta_axis))))
+    XX = (Xc) * math.cos(-theta) - (Yc) * math.sin(-theta)
+    YY = (Xc) * math.sin(-theta) + (Yc) * math.cos(-theta)
+    if stype == 'normal':
+       u = (XX / sx) ** 2 + (YY / sy) ** 2
+       sol = sx * sy * np.exp(-u / 2) / (2 * math.pi)
+    elif stype == 'exponential':
+       u = sqrt((XX / sx) ** 2 + (YY / sy) ** 2)
+       sol = sx * sy * np.exp(-u / math.sqrt(2))
+    else :
+       print "ERROR: No such surface type"
+       return False,[ybord,xbord]
     res = np.reshape(sol, (len(delta_axis), len(alpha_axis)))
     res = res / res.max()
     return res,[ybord,xbord]
