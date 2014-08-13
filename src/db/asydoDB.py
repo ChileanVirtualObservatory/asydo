@@ -8,7 +8,7 @@ from astropy.io.votable.tree import Table as pTable
 import urllib2
 import csv
 
-
+#TODO Standarise output to log.write
 
 SqlEquivalent = {
     "char":     "TEXT",
@@ -29,8 +29,8 @@ class DataBase:
     fields = []
     pointer = None
 
-    slap_serv = 'https://find.nrao.edu/splata-slap/slap'
-    alma_band_freq = {'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500], '9': [602, 720]}
+    #slap_serv = 'https://find.nrao.edu/splata-slap/slap'
+    #alma_band_freq = {'3': [88, 116], '4': [125, 163], '6': [211, 275], '7': [275, 373], '8': [385, 500], '9': [602, 720]}
 
     def __init__(self, dbName):
         self.name = dbName
@@ -48,25 +48,24 @@ class DataBase:
             self.pointer.close()
             self.connected = False
 
-    def VOGetLines(self,log, prefix):
+    def VOGetLines(self,log, source, w_range = [88000,720000]):
+        #w_range is in Mhz
         c = 299792458.0
-        for band in self.alma_band_freq:
-            log.write('band=' + band + '\n')
-            w_init = c / (self.alma_band_freq[band][0] * 1000000000.0)
-            w_end = c / (self.alma_band_freq[band][1] * 1000000000.0)
-            data = '?REQUEST=queryData&WAVELENGTH=' + \
-                str(w_init) + '/' + str(w_end) + '&VERB=3'
-            curl = self.slap_serv + data.encode('utf-8')
-            log.write('  -> Downloading lines via SLAP:\n')
-            log.write('  -> ' + curl + '\n')
-            req = urllib2.Request(curl)
-            response = urllib2.urlopen(req)
-            votable = response.read()
-            stri = prefix + band
-            location = './votables/' + stri + '.xml'
-            f = open(location, 'w')
-            f.write(votable)
-            f.close()
+        log.write('Importing lines in range from %s to %s \n' % (w_range[0], w_range[1]))
+        w_init = c / (int(w_range[0]) * 1000000.0)
+        w_end = c / (int(w_range[1]) * 1000000.0)
+        data = '?REQUEST=queryData&WAVELENGTH=' + \
+            str(w_init) + '/' + str(w_end) + '&VERB=3'
+        curl = source + data.encode('utf-8')
+        log.write('  -> Downloading lines via %s:\n' % source)
+        log.write('  -> ' + curl + '\n')
+        req = urllib2.Request(curl)
+        response = urllib2.urlopen(req)
+        votable = response.read()
+        location = './votables/customVOTable.xml'
+        f = open(location, 'w')
+        f.write(votable)
+        f.close()
 
     def loadFields(self, fields):
         #recieves the fields from the VOtable and adds them to the class
@@ -89,32 +88,35 @@ class DataBase:
             f.write(title.rjust(20," ") +"\t | \t"+ description.ljust(100," ") +"\t | \t"+ dataType+"\n")
         f.close()
 
-    def genTable(self):
-        #Generates the Catalog and Metada Tables, and populates the latter.
-        command = "CREATE TABLE Catalog ("
+    def genTable(self, allowed = []):
+        #Generates the Catalog and Metadata Tables, and populates the latter.
+        command = "CREATE TABLE Lines (ID INT PRIMARY KEY NOT NULL,"
         metadata = "CREATE TABLE Metadata (Column TEXT NOT NULL, Description TEXT NOT NULL)"
         insertMetadata = []
         output_command = []
         count = 0
+        c = False
         for i in self.fields:
             name,description, dataType = i
+            if count in allowed:
 
-            if count != 0:
-                command += ", "
+                if c:
+                    command += ", "
 
-            command = command + " " + name.replace(" ", "_") + " " + dataType
-            command2 = "INSERT INTO Metadata VALUES('" + name + "', '" + description + "')"
-            o_command = (name.replace(" ", "_"), description, dataType)
+                command = command + " " + allowed[count].replace(" ", "_") + " " + dataType
+                command2 = "INSERT INTO Metadata VALUES('" + allowed[count] + "', '" + description + "')"
+                o_command = (name.replace(" ", "_"), description, dataType)
 
 
-            insertMetadata.append(command2)
-            output_command.append(o_command)
+                insertMetadata.append(command2)
+                output_command.append(o_command)
+                c = True
+
             count += 1
 
         command = command + ")"
         self.printTableDef(output_command)
         self.connect()
-
         self.pointer.execute(command)
         self.pointer.execute(metadata)
         for com in insertMetadata:
@@ -123,56 +125,58 @@ class DataBase:
 
         self.disconnect()
 
-    def genInsertDataCommand(self, data):
+    def genInsertDataCommand(self, data, allowed = []):
         #Generates the commands for SQL Insertion
         rawData = data._data
         insertData = []
+        id = 1
         for line in rawData:
-            c = False
-            command = "INSERT INTO Catalog VALUES("
+            command = "INSERT INTO Lines VALUES(" + str(id)
+            counter = 0
             for value in line:
-                if c:
+                if counter in allowed:
                     command = command + ", "
-                c = True
-                if type(value).__name__ == "str":
-                    temp = value.replace("'","''")
-                    command = command + "'" + temp + "'"
+                    if type(value).__name__ == "str":
+                        temp = value.replace("'","''")
+                        command = command + "'" + temp + "'"
 
-                elif "int" in type(value).__name__ or "float" in type(value).__name__:
-                    if math.isnan(value):
-                        command = command + "'NaN'"
+                    elif "int" in type(value).__name__ or "float" in type(value).__name__:
+                        if math.isnan(value):
+                            command = command + "'NaN'"
+                        else:
+                            command = command + str(value)
+                    elif "bool" in type(value).__name__:
+                        if value:
+                            command = command + str(1)
+                        else:
+                            command = command + str(0)
                     else:
-                        command = command + str(value)
-                elif "bool" in type(value).__name__:
-                    if value:
-                        command = command + str(1)
-                    else:
-                        command = command + str(0)
-                else:
-                    print type(value).__name__
-                    print "Data Type not supported. Data not inserted in database. Exiting now!"
-                    sys.exit()
+                        print type(value).__name__
+                        print "Data Type not supported. Data not inserted in database. Exiting now!"
+                        sys.exit()
+                counter+=1
             command = command + ")"
             insertData.append(command)
+            id+=1
         return insertData
 
-    def insertData(self,data):
+    def insertData(self,data, allowed = []):
         #inserts the data into the database
-        commands = self.genInsertDataCommand(data)
+        commands = self.genInsertDataCommand(data, allowed)
         self.connect()
         for com in commands:
             self.pointer.execute(com)
         self.pointer.commit()
 
-    def loadVoTable(self,location):
+    def loadVoTable(self,location,allowed = []):
         #Generates the tables in the DB and loads the data.
         tbl = parse_single_table(location)
         if isinstance(tbl,pTable):
-        # tbl.array contiene los datos
-        # tbl.field contiene la metadata
+        # tbl.array contains the data
+        # tbl.field contains the metadata
             self.loadFields(tbl.fields)
-            self.genTable()
-            self.insertData(tbl.array)
+            self.genTable(allowed)
+            self.insertData(tbl.array,allowed)
 
     def loadMultipleVoTables(self,locations):
         #Loads the data of multiple VOTables, generating the definitions from the first VOTable in the location list
@@ -188,8 +192,7 @@ class DataBase:
                 self.insertData(currentTable.array)
 
 
-    def createDBFromCSV(self, filename):
-        #TODO Generalizar, la creacion de esta tabla es demasiado especifica.
+    def createDBFromCSV(self, filename,log):
         self.connect()
         create = "CREATE TABLE Lines(ID INT PRIMARY KEY NOT NULL,SPECIES TEXT,CHEM_NAME TEXT,FREQ REAL,INTENSITY REAL,EL REAL)"
         drop = "DROP TABLE Lines"
@@ -201,7 +204,7 @@ class DataBase:
                     try:
                        self.pointer.execute(drop)
                     except lite.OperationalError:
-                       print "WARNING: Drop failed\n"
+                       print "\tWARNING: Drop failed\n"
                     self.pointer.execute(create)
                     counter+=1
                 else:
@@ -216,13 +219,13 @@ class DataBase:
                            "',"+freq+","+row[7]+","+row[8]+")"
                     self.pointer.execute(insert)
                     counter+=1
+        log.write("%d Rows inserted in the Database\n" % (counter-2))
         self.pointer.commit()
         self.disconnect()
 
 
 
     def deleteDB(self):
-        os.remove(self.name)
+        if os.path.isfile(self.name+".sqlite"):
+            os.remove(self.name+".sqlite")
 
-dataBase = DataBase("ASYDO")
-dataBase.createDBFromCSV('splatalogue.csv')
