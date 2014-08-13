@@ -1,5 +1,6 @@
 import math
 import numpy as np
+DEG2ARCSEC = 3600.0
 
 def spatialWindow(alpha,delta,spx,spy,alpha_axis,delta_axis):
     """ Frequency window.
@@ -21,8 +22,8 @@ def spatialWindow(alpha,delta,spx,spy,alpha_axis,delta_axis):
 
 def genSurface(form,alpha,delta,alpha_axis,delta_axis):
     "Create a gaussian surface over a mesh created by x and y axes"
-    sx = form[1]
-    sy = form[2]
+    sx = form[1]/DEG2ARCSEC
+    sy = form[2]/DEG2ARCSEC
     theta = form[3]
     spx= abs(3*sx*math.cos(theta)) + abs(3*sy*math.sin(theta))
     spy= abs(3*sx*math.sin(theta)) + abs(3*sy*math.cos(theta))

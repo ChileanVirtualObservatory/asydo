@@ -52,14 +52,10 @@ class IMCM(Component):
         arr_temp = []
         self.log.write('   * Generating spatial form\n') # TODO More info
         T,Tbord=genSurface(self.spa_form,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis)
-        print Tbord
-        print len(T)
-        print len(T[0])
-        print T
         xbord=Tbord[0]
         ybord=Tbord[1]
         G=genGradient(self.z_grad,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis,Tbord)
-
+        #print G
         self.log.write('   * Generating line form\n') #TODO More info
         self.log.write('   * Loading and correcting lines with z=' + str(self.z) + ')\n')
         db = lite.connect('db/lines.db')
@@ -89,13 +85,18 @@ class IMCM(Component):
                 trans_temp = lin[5]
                 temp = np.exp(-abs(trans_temp - self.temp) / self.temp) * rinte
                 freq = (1 + self.z) * lin[3] # Catalogs must be in Mhz 
-                L,Lbord=genLine(self.spe_form,freq,cube.freq_axis)
-                self.log.write('E: ' + str(lin[2]) + ' (' + str(lin[1]) + ') at ' + str(freq) + ' Mhz, T = exp(-|' \
+                self.log.write('E: ' + str(lin[2]) + ' (' + str(lin[1]) + ') around ' + str(freq) + ' Mhz, T = exp(-|' \
                           + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(
                     rinte) + ' = ' + str(temp) + ' K  ' + '\n')
-                for idx in range(Lbord[0], Lbord[1]):
-                    #for xp in range(xbord[0],xbord[1]):
-                    cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] = cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] + T * temp * L[idx - Lbord[0]]
+
+                for xp in range(xbord[0],xbord[1]):
+                    for yp in range(ybord[0],ybord[1]):
+                        freq = math.sqrt((1 + (self.rv+G[xp-xbord[0],yp-ybord[0]])*KILO/SPEED_OF_LIGHT)/(1 - (self.rv+G[xp-xbord[0],yp-ybord[0]])*KILO/SPEED_OF_LIGHT))*lin[3]
+                        L,Lbord=genLine(self.spe_form,freq,cube.freq_axis)
+                        cube.data[Lbord[0]:Lbord[1],xp,yp] = cube.data[Lbord[0]:Lbord[1],xp,yp] + T[xp-xbord[0],yp-ybord[0]] * temp * L
+                        
+                #for idx in range(Lbord[0], Lbord[1]):
+                #    cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] = cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] + T * temp * L[idx - Lbord[0]]
                 arr_code.append(self.comp_name + '-r' + str(self.alpha) +'-d'+str(self.delta) + "-l" + str(counter))
                 arr_mol.append(mol)
                 arr_temp.append(temp)
