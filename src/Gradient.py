@@ -17,12 +17,12 @@ def genGradient(form,alpha,delta,alpha_axis,delta_axis,Tbord):
         Yc = delta_mesh.flatten() - delta * np.ones(len(alpha_axis) * len(delta_axis))
         #print delta_mesh
         #print Yc
-        XX = Xc * math.cos(theta) - (Yc) * math.sin(theta);
-        YY = Xc * math.sin(theta) + (Yc) * math.cos(theta);
+        XX = Xc * math.cos(-theta) - (Yc) * math.sin(-theta);
+        #YY = Xc * math.sin(theta) + (Yc) * math.cos(theta);
         #print XX
         #print YY
-        u = km_sarcs*(XX + YY)
-        res = np.reshape(u, (len(alpha_axis), len(delta_axis)))
+        #u = km_sarcs*XX # + YY)
+        res = np.transpose(np.reshape(km_sarcs*XX, (len(delta_axis), len(alpha_axis))))
         #print res
         return res
 

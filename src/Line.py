@@ -47,7 +47,8 @@ def genLine(spe_form,freq,freq_axis):
     sigma = (fwhm*1000 / S_FACTOR) * (freq/SPEED_OF_LIGHT)
     factor=3*sigma
     window=freqWindow(freq,factor,freq_axis)
-
+    if window[0]>window[1]:
+       return False,window
     #distro = zeros(window[0],window[1])
     
     d = a/sqrt(1.0 + a**2)

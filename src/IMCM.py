@@ -52,6 +52,8 @@ class IMCM(Component):
         arr_temp = []
         self.log.write('   * Generating spatial form\n') # TODO More info
         T,Tbord=genSurface(self.spa_form,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis)
+        if isinstance(T,bool):
+           return
         xbord=Tbord[0]
         ybord=Tbord[1]
         G=genGradient(self.z_grad,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis,Tbord)
@@ -93,7 +95,9 @@ class IMCM(Component):
                     for yp in range(ybord[0],ybord[1]):
                         freq = math.sqrt((1 + (self.rv+G[xp-xbord[0],yp-ybord[0]])*KILO/SPEED_OF_LIGHT)/(1 - (self.rv+G[xp-xbord[0],yp-ybord[0]])*KILO/SPEED_OF_LIGHT))*lin[3]
                         L,Lbord=genLine(self.spe_form,freq,cube.freq_axis)
-                        cube.data[Lbord[0]:Lbord[1],xp,yp] = cube.data[Lbord[0]:Lbord[1],xp,yp] + T[xp-xbord[0],yp-ybord[0]] * temp * L
+                        if isinstance(L,bool):
+                           continue
+                        cube.data[xp,yp,Lbord[0]:Lbord[1]] = cube.data[xp,yp,Lbord[0]:Lbord[1]] + T[xp-xbord[0],yp-ybord[0]] * temp * L
                         
                 #for idx in range(Lbord[0], Lbord[1]):
                 #    cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] = cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] + T * temp * L[idx - Lbord[0]]

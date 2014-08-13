@@ -13,10 +13,18 @@ def spatialWindow(alpha,delta,spx,spy,alpha_axis,delta_axis):
        xbord[0]=0
     if ybord[0] < 0:
        ybord[0]=0
+    #if xbord[1] < 0:
+    #   xbord[1]=0
+    #if ybord[1] < 0:
+    #   ybord[1]=0
     if xbord[1] > len(alpha_axis):
        xbord[1]=len(alpha_axis)
     if ybord[1] > len(delta_axis):
        ybord[1]=len(delta_axis)
+    #if xbord[0] > len(alpha_axis):
+    #   xbord[0]=len(alpha_axis)
+    #if ybord[0] > len(delta_axis):
+    #   ybord[0]=len(delta_axis)
     return (xbord,ybord)
 
 
@@ -28,14 +36,17 @@ def genSurface(form,alpha,delta,alpha_axis,delta_axis):
     spx= abs(3*sx*math.cos(theta)) + abs(3*sy*math.sin(theta))
     spy= abs(3*sx*math.sin(theta)) + abs(3*sy*math.cos(theta))
     xbord,ybord=spatialWindow(alpha,delta,spx,spy,alpha_axis,delta_axis)
+    print xbord,ybord
+    if xbord[0]>xbord[1] or ybord[0]>ybord[1]:
+        return False,[xbord,ybord]
     alpha_axis=alpha_axis[xbord[0]:xbord[1]]
     delta_axis=delta_axis[ybord[0]:ybord[1]]
 #    r = 3 * math.sqrt(sx ** 2 + sy ** 2)
     alpha_mesh, delta_mesh = np.meshgrid(alpha_axis, delta_axis, sparse = False, indexing = 'xy')
     Xc = alpha_mesh.flatten() - alpha * np.ones(len(alpha_axis) * len(delta_axis))
     Yc = delta_mesh.flatten() - delta * np.ones(len(alpha_axis) * len(delta_axis))
-    XX = (Xc) * math.cos(theta) - (Yc) * math.sin(theta);
-    YY = (Xc) * math.sin(theta) + (Yc) * math.cos(theta);
+    XX = (Xc) * math.cos(-theta) - (Yc) * math.sin(-theta);
+    YY = (Xc) * math.sin(-theta) + (Yc) * math.cos(-theta);
     u = (XX / sx) ** 2 + (YY / sy) ** 2;
     sol = sx * sy * np.exp(-u / 2) / (2 * math.pi);
     #res = np.transpose(np.reshape(sol, (len(alpha_axis), len(delta_axis))))
