@@ -26,7 +26,17 @@ def reporthook(count, block_size, total_size):
     log.write("\r\t...%d%%, %d MB, %d KB/s, %d seconds passed" % (percent, progress_size / (1024 * 1024), speed, duration))
     log.flush()
 
+def helper(log):
+    log.write("\n")
+    log.write("usage:   dbCreator.py | [options] [path] | [options] [path] [secondary] [range]| \n")
+    log.write("Options:\n")
+    log.write("\t -C\t: Use .CSV as input file, [path] is path to the desired file \n")
+    log.write("\t -T\t: Use SLAP Service as input, [path] is URL of service \n")
+    log.write("Secundary:\n")
+    log.write("\t -R\t: Only used wit -T, allows for custom wavelengh range query. [range] is in the form <minimum:maximum>\n")
+    log.write("\n")
 
+complete = False
 
 if (len(sys.argv)==1):
 
@@ -54,17 +64,19 @@ elif (len(sys.argv)>2):
         database.deleteDB()
         database.VOGetLines(log,URI,w_range)
         database.loadVoTable("./votables/customVOTable.xml",{3:"FREQ",4:"SPECIES",5:"CHEM_NAME",7:"INTENSITY",11:"EL"})
+        complete = True
 
 
-
-
-    #elif (sys.argv[1]=="-s"): TODO Allow use of SQLITE (CDMS)
-
-    #else TODO Include helper -h and -help
+    else:
+        helper(log)
+else:
+    helper(log)
 
 
 if csv:
     log.write("Importing CSV (%s) to SQL Database\n" % os.path.basename(URI))
     database.createDBFromCSV(URI,log)
+    complete = True
 
-log.write("Database creation is now complete, you can now use ASYDO. Have a nice day.\n")
+if complete:
+    log.write("Database creation is now complete, you can now use ASYDO. Have a nice day.\n")
