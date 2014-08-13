@@ -52,7 +52,12 @@ class IMCM(Component):
         arr_temp = []
         self.log.write('   * Generating spatial form\n') # TODO More info
         T,Tbord=genSurface(self.spa_form,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis)
-        
+        print Tbord
+        print len(T)
+        print len(T[0])
+        print T
+        xbord=Tbord[0]
+        ybord=Tbord[1]
         G=genGradient(self.z_grad,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis,Tbord)
 
         self.log.write('   * Generating line form\n') #TODO More info
@@ -89,7 +94,8 @@ class IMCM(Component):
                           + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(
                     rinte) + ' = ' + str(temp) + ' K  ' + '\n')
                 for idx in range(Lbord[0], Lbord[1]):
-                    cube.data[idx] = cube.data[idx] + T * temp * L[idx - Lbord[0]]
+                    #for xp in range(xbord[0],xbord[1]):
+                    cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] = cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] + T * temp * L[idx - Lbord[0]]
                 arr_code.append(self.comp_name + '-r' + str(self.alpha) +'-d'+str(self.delta) + "-l" + str(counter))
                 arr_mol.append(mol)
                 arr_temp.append(temp)
@@ -114,6 +120,5 @@ class IMCM(Component):
 
         cube.addHDU(hdu)
         cube.addHDU(tbhdu)
-
 
 

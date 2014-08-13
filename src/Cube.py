@@ -1,7 +1,8 @@
 import numpy as np
+import pylab as plt
+import matplotlib.animation as animation
 from astropy.io import fits
 from collections import namedtuple
-
 
 
 DEG2ARCSEC = 3600.0
@@ -28,11 +29,11 @@ class Cube:
         log.write('Generating cube ' + name + '\n')
         log.write('  -> Angular Coordinates (deg): ra=' + str(spec.alpha)\
                   + ' dec=' + str(spec.delta) + '\n')
-        fact = spec.ang_fov / (DEG2ARCSEC * spec.ang_res)
+        fact = spec.ang_fov / DEG2ARCSEC
         self.alpha_border = [spec.alpha - fact / 2, spec.alpha + fact / 2]
         self.delta_border = [spec.delta - fact / 2, spec.delta + fact / 2]
-        self.alpha_axis = np.linspace(self.alpha_border[0], self.alpha_border[1], spec.ang_fov / spec.ang_res)
-        self.delta_axis = np.linspace(self.delta_border[0], self.delta_border[1], spec.ang_fov / spec.ang_res)
+        self.alpha_axis = np.linspace(self.alpha_border[0], self.alpha_border[1], int(spec.ang_fov / spec.ang_res))
+        self.delta_axis = np.linspace(self.delta_border[0], self.delta_border[1], int(spec.ang_fov / spec.ang_res))
         if spec.alpha > 90 or spec.alpha < -90:
             raise Exception('ERROR: invalid coordinate: ra=' + spec.alpha)
         if spec.delta > 90 or spec.delta < -90:
@@ -45,7 +46,7 @@ class Cube:
         if self.channels > MAX_CHANNELS:
             log.write('WARNING: max ALMA channels exceeded\n')
         self.freq_axis = np.linspace(self.freq_border[0], self.freq_border[1], self.channels)
-        log.write('  -> Spectral (GHz): center=' + str(spec.freq) + ' bandwidth=' + str(self.freq_border) + '\n')
+        log.write('  -> Spectral (MHz): center=' + str(spec.freq) + ' bandwidth=' + str(self.freq_border) + '\n')
         log.write('  -> Cube size: ' + str(len(self.alpha_axis)) + ' x ' + str(len(self.delta_axis)) + ' x ' + str(len(self.freq_axis)) + ' \n')
         self.band = 'NO_BAND'
         for bnd in band_freq:
@@ -88,23 +89,22 @@ class Cube:
     def saveFits(self, sources, filename):
         self.hdulist.writeto(filename, clobber=True)
 
-#    def _updatefig(self, j):
-#        """ Animate helper function """
-#        # self.im.set_array(self.data[:, :, j])
-#        self.im.set_array(self.data[j,:,:])
-#        return self.im,
+    def _updatefig(self, j):
+        """ Animate helper function """
+        # self.im.set_array(self.data[:, :, j])
+        self.im.set_array(self.data[j,:,:])
+        return self.im,
 
-
-#    def animate(self, inte, rep=True):
-#        """ Animate the cube.
-#                inte       : time interval between frames
-#                 rep[=True] : boolean to repeat the animation
-#          """
-#        fig = plt.figure()
-#        # self.im = plt.imshow(self.data[:, :, 0], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
-#        #                     extent=(self.alpha_border[0], self.alpha_border[1], self.delta_border[0], self.delta_border[1]))
-#        self.im = plt.imshow(self.data[0,:,:], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
-#                             extent=(self.alpha_border[0], self.alpha_border[1], self.delta_border[0], self.delta_border[1]))
-#        ani = animation.FuncAnimation(fig, self._updatefig, frames=range(len(self.freq_axis)), interval=inte, blit=True,
-#                                      repeat=rep)
-#        plt.show()
+    def animate(self, inte, rep=True):
+        """ Animate the cube.
+                inte       : time interval between frames
+                 rep[=True] : boolean to repeat the animation
+          """
+        fig = plt.figure()
+        # self.im = plt.imshow(self.data[:, :, 0], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
+        #                     extent=(self.alpha_border[0], self.alpha_border[1], self.delta_border[0], self.delta_border[1]))
+        self.im = plt.imshow(self.data[0,:,:], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
+                             extent=(self.alpha_border[0], self.alpha_border[1], self.delta_border[0], self.delta_border[1]))
+        ani = animation.FuncAnimation(fig, self._updatefig, frames=range(len(self.freq_axis)), interval=inte, blit=True,
+                                      repeat=rep)
+        plt.show()

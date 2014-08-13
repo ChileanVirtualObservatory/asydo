@@ -4,17 +4,25 @@ from scipy.special import erf
 SPEED_OF_LIGHT = 299792458.0
 S_FACTOR = 2.3548200450309493820231386529193992754947713787716410 #sqrt(8*ln2)
 
-def freqWindow(ini,end, freq_axis):
+def freqWindow(freq,factor,freq_axis):
     """ Frequency window.
        """
-    idx1=0
-    idx2=len(freq_axis)
-    for i in range(len(freq_axis)):
-        if ini > freq_axis[i]:
-            idx1=i
-        if end < freq_axis[i]:
-            idx2=i
-    return (idx1,idx2)
+    Dlta=freq_axis[1] - freq_axis[0]
+    ini=int(round((freq - factor - freq_axis[0])/Dlta))
+    end=int(round((freq + factor - freq_axis[0])/Dlta))
+    if ini < 0:
+       ini=0
+    if end > len(freq_axis):
+       end=len(freq_axis)
+    #idx1=0
+    #idx2=len(freq_axis)
+    #for i in range(len(freq_axis)):
+    #    if ini > freq_axis[i]:
+    #        idx1=i
+    #    if end < freq_axis[i]:
+    #        idx2=i
+    #return (idx1,idx2)
+    return (ini,end)
 
 def pdf(x):
     return 1/sqrt(2*pi) * exp(-x**2/2)
@@ -38,7 +46,7 @@ def genLine(spe_form,freq,freq_axis):
     #window = [0,len(freq_axis)]
     sigma = (fwhm*1000 / S_FACTOR) * (freq/SPEED_OF_LIGHT)
     factor=3*sigma
-    window=freqWindow(freq - factor,freq + factor,freq_axis)
+    window=freqWindow(freq,factor,freq_axis)
 
     #distro = zeros(window[0],window[1])
     
