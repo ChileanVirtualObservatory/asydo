@@ -1,4 +1,0 @@
-#!/bin/bash
-./CDMS.sh
-mv cdms_sqlite.db lines.db
-

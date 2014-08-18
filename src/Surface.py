@@ -52,8 +52,8 @@ def genSurface(form,alpha,delta,alpha_axis,delta_axis):
        u = (XX / sx) ** 2 + (YY / sy) ** 2
        sol = sx * sy * np.exp(-u / 2) / (2 * math.pi)
     elif stype == 'exponential':
-       u = sqrt((XX / sx) ** 2 + (YY / sy) ** 2)
-       sol = sx * sy * np.exp(-u / math.sqrt(2))
+       u = sqrt((XX / sx)**2 +  (YY / sy)**2)
+       sol = sx * sy * np.exp(-u /sqrt(2))
     else :
        print "ERROR: No such surface type"
        return False,[ybord,xbord]
