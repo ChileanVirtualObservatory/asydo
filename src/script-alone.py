@@ -25,6 +25,7 @@ for mol in molist:
    for i in range(49):
       fcenter=(276 + 2*i)*1000
       cspec=CubeSpec(0.0,counter,fcenter,10,800,2,2000)
-      cube=univ.genCube('alone-'+mol,cspec, 'alone-'+mol+'-'+str(fcenter)+'.fits')
+      cube=univ.genCube('alone-'+mol,cspec)
+      univ.saveCube(sube, 'alone-'+mol+'-'+str(fcenter)+'.fits')
    counter+=1
 

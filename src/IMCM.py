@@ -97,7 +97,7 @@ class IMCM(Component):
                         L,Lbord=genLine(self.spe_form,freq,cube.freq_axis)
                         if isinstance(L,bool):
                            continue
-                        cube.data[Lbord[0]:Lbord[1],yp,xp] = cube.data[Lbord[0]:Lbord[1],yp,xp] + T[yp-ybord[0],xp-xbord[0]] * temp * L
+                        cube.data[Lbord[0]:Lbord[1]+1,yp,xp] = cube.data[Lbord[0]:Lbord[1]+1,yp,xp] + T[yp-ybord[0],xp-xbord[0]] * temp * L
                         
                 #for idx in range(Lbord[0], Lbord[1]):
                 #    cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] = cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] + T * temp * L[idx - Lbord[0]]

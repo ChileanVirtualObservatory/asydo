@@ -40,8 +40,8 @@ def genSurface(form,alpha,delta,alpha_axis,delta_axis):
     xbord,ybord=spatialWindow(alpha,delta,spx,spy,alpha_axis,delta_axis)
     if xbord[0]>xbord[1] or ybord[0]>ybord[1]:
         return False,[ybord,xbord]
-    alpha_axis=alpha_axis[xbord[0]:xbord[1]]
-    delta_axis=delta_axis[ybord[0]:ybord[1]]
+    alpha_axis=alpha_axis[xbord[0]:xbord[1]+1]
+    delta_axis=delta_axis[ybord[0]:ybord[1]+1]
 #    r = 3 * math.sqrt(sx ** 2 + sy ** 2)
     alpha_mesh, delta_mesh = np.meshgrid(alpha_axis, delta_axis, sparse = False, indexing = 'xy')
     Xc = alpha_mesh.flatten() - alpha * np.ones(len(alpha_axis) * len(delta_axis))
@@ -57,8 +57,13 @@ def genSurface(form,alpha,delta,alpha_axis,delta_axis):
     else :
        print "ERROR: No such surface type"
        return False,[ybord,xbord]
+    #print alpha_axis
+    #print delta_axis
+    #print xbord, ybord
+    #print sol
+    sol = sol/ max(sol)
     res = np.reshape(sol, (len(delta_axis), len(alpha_axis)))
-    res = res / res.max()
+    #res = res / res.max()
     return res,[ybord,xbord]
 
 

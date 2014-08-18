@@ -1,6 +1,7 @@
 import numpy as np
 import pylab as plt
 import matplotlib.animation as animation
+import matplotlib
 from astropy.io import fits
 from collections import namedtuple
 
@@ -100,6 +101,7 @@ class Cube:
                 inte       : time interval between frames
                  rep[=True] : boolean to repeat the animation
           """
+#        matplotlib.pyplot.ion()
         fig = plt.figure()
         # self.im = plt.imshow(self.data[:, :, 0], cmap=plt.get_cmap('jet'), vmin=self.data.min(), vmax=self.data.max(), \
         #                     extent=(self.alpha_border[0], self.alpha_border[1], self.delta_border[0], self.delta_border[1]))

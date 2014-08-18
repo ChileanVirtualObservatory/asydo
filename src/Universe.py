@@ -27,14 +27,16 @@ class Universe:
     def addComponent(self, source_name, model):
         self.sources[source_name].addComponent(model)
 
-    def genCube(self, name, cubespec, filename):
+    def genCube(self, name, cubespec):
         cube = Cube(self.log, name, cubespec)
         for src in self.sources: 
             self.log.write('   * Source: ' + src + '\n')
             self.sources[src].project(cube)
+        return cube
+
+    def saveCube(self,cube,filename):
         self.log.write('   * Saving FITS: ' + filename + '\n')
         cube.saveFits(self.sources, filename)
-        return cube
 
     def removeSource(self, name):
         self.log.write('Removing source '+name)

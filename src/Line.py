@@ -56,7 +56,7 @@ def genLine(spe_form,freq,freq_axis):
     #    distro.append(np.exp((-0.5 * (freq_axis[idx] - freq) ** 2) / (sigma ** 2)))
     w = sigma/sqrt(1.0 - (2.0/pi)*d**2)
     e = freq - w*d*sqrt(2.0/pi)
-    distro = skew(freq_axis[window[0]:window[1]],e,w,a)
+    distro = skew(freq_axis[window[0]:window[1]+1],e,w,a)
     distro = distro / sum(distro)
     return distro,window
 
