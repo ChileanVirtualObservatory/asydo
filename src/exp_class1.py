@@ -18,9 +18,10 @@ target=3
 samples=100
 spa_pix=5
 spe_pix=100
-vect=np.zeros((samples,spa_pix*spa_pix*spe_pix))
+#vect=np.zeros((samples,spa_pix*spa_pix*spe_pix))
 
 def gen_cube(x):
+   global vect
    print x
    mask = np.random.randint(2,size=siz)
    #print mask
@@ -47,12 +48,13 @@ def gen_cube(x):
    fcenter=300000
    cspec=CubeSpec(0.0,0.0,fcenter,500/spa_pix,500,20000/spe_pix,20000)
    cube=univ.genCube('combined',cspec)
-   vect[x]=cube.data.flatten()
+   return cube.data.flatten()
+
 
 p = Pool(8)
-
-p.map(gen_cube,range(samples))
-info = np.asarray(vect)
+result=p.map(gen_cube,range(samples))
+print result
+info = np.asarray(result)
 np.save('exp1.npy', info)
 #np.savetxt('exp1.txt', vect, newline="\n")
   
