@@ -2,7 +2,7 @@ from Component import *
 from Surface import *
 from Line import *
 from Gradient import *
-import sqlite3 as lite
+from DataBase import *
 import random
 from astropy.io import fits
 import numpy as np
@@ -14,15 +14,18 @@ inten_group=[('default'), ('COv=0'), ('13COv=0'), ('HCO+, HC3N, CS, C18O, CH3OH,
 inten_values=[[0.1, 2], [20, 60], [5, 20], [1, 10]]
 
 default_iso_abundance={'13C': 1.0 / 30, '18O': 1.0 / 60, '17O': 1.0/120, '34S': 1.0 / 30, '33S': 1.0 / 120,'13N': 1.0 / 30, 'D': 1.0 / 30}
+default_dbpath='ASYDO'
+
 
 class IMCM(Component):
     
     """ Interstellar Molecular Cloud Model """
-    def __init__(self, log, mol_list, temp, spa_form, spe_form, z_grad,z_base=0.0, abun_max=10 ** -5, abun_min=10 ** -6, abun_CO=1.0, iso_abun=default_iso_abundance):
+    def __init__(self, log, mol_list, temp, spa_form, spe_form, z_grad,z_base=0.0, abun_max=10 ** -5, abun_min=10 ** -6, abun_CO=1.0, iso_abun=default_iso_abundance,dbpath=default_dbpath):
         Component.__init__(self,log,z_base)
         self.spa_form = spa_form
         self.spe_form = spe_form
         self.z_grad=z_grad
+        self.dbpath=dbpath
         self.temp=temp
         self.intens = dict()
         for mol in mol_list.split(','):
@@ -60,7 +63,8 @@ class IMCM(Component):
         #print G
         self.log.write('   * Generating line form\n') #TODO More info
         self.log.write('   * Loading and correcting lines with z=' + str(self.z) + ')\n')
-        db = lite.connect('db/lines.db')
+        db=DataBase(self.dbpath)
+        db.connect()
         freq_init_corr = cube.freq_border[0] / (1 + self.z)
         freq_end_corr = cube.freq_border[1] / (1 + self.z)
         counter=0
@@ -69,12 +73,7 @@ class IMCM(Component):
             # For each molecule specified in the dictionary
             # load its spectral lines
 
-            self.log.write("SQL SENTENCE:\n")
-            select = "SELECT * FROM Lines WHERE SPECIES like '" + mol + "' AND FREQ > " + str(freq_init_corr) + " AND FREQ < " + str(freq_end_corr)
-            self.log.write(select + '\n')
-            resp = db.execute(select)
-
-            linlist = resp.fetchall()        # Selected spectral lines for this molecule
+            linlist = db.getSpeciesLines(mol,freq_init_corr, freq_end_corr) # Selected spectral lines for this molecule
 
             rinte = inten_values[0]
             for j in range(len(inten_group)): # TODO baaad python...  
@@ -109,12 +108,12 @@ class IMCM(Component):
                 arr_rad_vel.append(self.rv)
                 arr_fwhm.append(self.spe_form[1])
 
+        db.disconnect()
         hduT = fits.PrimaryHDU()
         hduT.data = T;
         #TODO Add redshift
         hduG = fits.PrimaryHDU()
         hduG.data = G;
-
         #Add Metadada to the FIT
         tbhdu = fits.new_table(fits.ColDefs([
                      fits.Column(name='line_code',format='60A',array=arr_code), 

@@ -3,8 +3,8 @@ class Source:
     """A source of EM Waves"""
 
     def __init__(self, log, name, alpha, delta):
-        log.write('Source \'' + name + '\' added \n')
         self.log = log
+        log.write('Source \'' + name + '\' added \n')
         self.alpha = alpha
         self.delta = delta
         self.name = name

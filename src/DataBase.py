@@ -48,6 +48,24 @@ class DataBase:
             self.pointer.close()
             self.connected = False
 
+    def executeSQL(self,sentence):
+        #self.log.write("EXECUTING SQL SENTENCE:\n")
+        #self.log.write(sentence + '\n')
+        resp = self.pointer.execute(sentence)
+        return resp.fetchall()      
+    
+    def getSpeciesLines(self,mol,freq_i,freq_e):
+        select = "SELECT * FROM Lines WHERE SPECIES like '" + mol + "' AND FREQ > " + str(freq_i) + " AND FREQ < " + str(freq_e)
+        return self.executeSQL(select)
+ 
+    def getMoleculeList(self,freq_i,freq_e):
+        select = "SELECT DISTINCT CHEM_NAME FROM Lines WHERE FREQ > " + str(freq_i) + " AND FREQ < " + str(freq_e)
+        return self.executeSQL(select)
+
+    def getSpeciesList(self,chem_name,freq_i,freq_e):
+        select = "SELECT DISTINCT SPECIES FROM Lines WHERE CHEM_NAME like '" + chem_name + "' AND FREQ > " + str(freq_i) + " AND FREQ < " + str(freq_e)
+        return self.executeSQL(select)
+   
     def VOGetLines(self,log, source, w_range = [88000,720000]):
         #w_range is in Mhz
         c = 299792458.0

@@ -3,11 +3,11 @@ import time
 import urllib
 import os
 
-from asydoDB import DataBase
+from DataBase import *
 
 default_url = "http://www.csrg.cl/~maray/splatalogue.csv"
 default_csv_name = "lines2.csv"
-default_db_name = "Lines"
+default_db_name = "ASYDO"
 csv = False
 URI = ""
 log = sys.stdout
