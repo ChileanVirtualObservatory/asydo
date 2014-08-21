@@ -23,6 +23,9 @@ def rget(val):
    else:
       return val
 
+global run
+run=0
+
 class CFP:
    def  __init__(self,dbpath,mol_prob=0.3,x_pos=0.0,y_pos=0.0,f_pos=300000,spa_pix=5,spe_pix=100,fov=500,bw=2000,rvel=(150,1000),temp=(50,500),semiaxis=(10,300),fwhm=(10,50),angle=(0,math.pi),rot=(50,500),curtosis=(-5,5)):
       self.rvel=rvel
@@ -44,16 +47,10 @@ class CFP:
       self.force_list=list()
       self.ban_list=list()
 
-   def forceMolecule(self,name):
-      self.force_list.append(name)
-
-   def banMolecule(self,name):
-      self.ban_list.append(name)
-
 CFParams=CFP('ASYDO')
 
 def unitaryGen(n):
-      global CFParams
+      global CFParams, run
       print "Generating cube", n
       db=DataBase(CFParams.dbpath)
       db.connect()
@@ -61,7 +58,7 @@ def unitaryGen(n):
         os.mkdir("logs")
       except OSError:
         pass
-      log=open('logs/cube-'+str(n)+'.log', 'w')
+      log=open('logs/exp-r'+str(run)+"-c"+str(n)+'.log', 'w')
       univ=Universe(log)
       xpos=rget(CFParams.x_pos)
       ypos=rget(CFParams.y_pos)
@@ -76,10 +73,12 @@ def unitaryGen(n):
       #print chList
       # HERE Random selection of molecules
       for chName in chList:
-         if chName in CFParams.ban_list:
+         if chName[0] in CFParams.ban_list:
+            log.write("Mol: "+chName[0]+" banned!")
             continue
-         if CFParams.mol_prob < random.random() and chName not in CFParams.force_list:
-            continue
+         if random.random() > CFParams.mol_prob:
+            if not (chName[0] in CFParams.force_list):
+               continue
          molist=db.getSpeciesList(chName[0],lf,uf)
          s_x=rget(CFParams.semiaxis)
          s_y=rget(CFParams.semiaxis)
@@ -104,13 +103,23 @@ def unitaryGen(n):
       return cube.data.flatten()
 
 def parallelGen(samples,nproc):
+   global run
+   run+=1
    p = Pool(nproc)
    result=p.map(unitaryGen,range(samples))
    return result
 
+sample_size=30000
       #info = np.asarray(result)
-      #np.save('exp1.npy', info)
-#cubelst=parallelGen(100,8)
-import cProfile
-import re
-cProfile.run('unitaryGen(0)')
+CFParams.ban_list.append('Phosphapropynylidyne')
+negative=np.asarray(parallelGen(sample_size/2,4))
+CFParams.ban_list=list()
+CFParams.force_list.append('Phosphapropynylidyne')
+positive=np.asarray(parallelGen(sample_size/2,4))
+result=np.vstack((negative,positive))
+np.save('exp1.npy', result)
+
+
+#import cProfile
+#import re
+#cProfile.run('unitaryGen(0)')
