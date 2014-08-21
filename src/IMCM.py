@@ -68,7 +68,7 @@ class IMCM(Component):
         freq_init_corr = cube.freq_border[0] / (1 + self.z)
         freq_end_corr = cube.freq_border[1] / (1 + self.z)
         counter=0
-
+        used=False
         for mol in self.intens:
             # For each molecule specified in the dictionary
             # load its spectral lines
@@ -85,6 +85,8 @@ class IMCM(Component):
                 counter+=1
                 trans_temp = lin[5]
                 temp = np.exp(-abs(trans_temp - self.temp) / self.temp) * rinte
+                if temp < 2*cube.noise :
+                   continue
                 freq = (1 + self.z) * lin[3] # Catalogs must be in Mhz 
                 self.log.write('E: ' + str(lin[2]) + ' (' + str(lin[1]) + ') around ' + str(freq) + ' Mhz, T = exp(-|' \
                           + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(
@@ -97,6 +99,7 @@ class IMCM(Component):
                         if isinstance(L,bool):
                            continue
                         cube.data[Lbord[0]:Lbord[1]+1,yp,xp] = cube.data[Lbord[0]:Lbord[1]+1,yp,xp] + T[yp-ybord[0],xp-xbord[0]] * temp * L
+                        used=True
                         
                 #for idx in range(Lbord[0], Lbord[1]):
                 #    cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] = cube.data[idx,xbord[0]:xbord[1],ybord[0]:ybord[1]] + T * temp * L[idx - Lbord[0]]
@@ -107,8 +110,9 @@ class IMCM(Component):
                 arr_rest_freq.append(str(lin[3]))
                 arr_rad_vel.append(self.rv)
                 arr_fwhm.append(self.spe_form[1])
-
         db.disconnect()
+        if not used:
+           return
         hduT = fits.PrimaryHDU()
         hduT.data = T;
         #TODO Add redshift
