@@ -30,12 +30,12 @@ class Universe:
     def genCube(self, name, cubespec):
         cube = Cube(self.log, name, cubespec)
         for src in self.sources: 
-            self.log.write('   * Source: ' + src + '\n')
+            self.log.write('*** Source: ' + src + '\n')
             self.sources[src].project(cube)
         return cube
 
     def saveCube(self,cube,filename):
-        self.log.write('   * Saving FITS: ' + filename + '\n')
+        self.log.write('   -++ Saving FITS: ' + filename + '\n')
         cube.saveFits(self.sources, filename)
 
     def removeSource(self, name):

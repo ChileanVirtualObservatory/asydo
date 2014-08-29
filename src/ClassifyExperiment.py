@@ -3,7 +3,7 @@ import numpy as np
 
 trainPerc=0.75
 
-X=np.load('exp1.npy')
+X=np.nan_to_num(np.load('exp2.npy'))
 siz=len(X)
 half=int(siz/2)
 X0=X[0:half]

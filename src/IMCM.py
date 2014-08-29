@@ -42,8 +42,7 @@ class IMCM(Component):
         self.intens=intens;
 
     def info(self):
-        #TODO...
-        return "z = "+str(self.z)
+        return "mol_list = "+str(self.intens.keys())+" @ spa_form="+str(self.spa_form)+", spe_form="+str(self.spe_form)+", z="+str(self.z)+", grad="+str(self.z_grad)
 
     def project(self, cube):
         arr_code = []
@@ -53,7 +52,7 @@ class IMCM(Component):
         arr_rad_vel = []
         arr_fwhm = []
         arr_temp = []
-        self.log.write('   * Generating spatial form\n') # TODO More info
+        self.log.write('   --+ Generating template image\n') # TODO More info
         T,Tbord=genSurface(self.spa_form,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis)
         if isinstance(T,bool):
            return
@@ -61,8 +60,8 @@ class IMCM(Component):
         xbord=Tbord[1]
         G=genGradient(self.z_grad,self.alpha,self.delta,cube.alpha_axis,cube.delta_axis,Tbord)
         #print G
-        self.log.write('   * Generating line form\n') #TODO More info
-        self.log.write('   * Loading and correcting lines with z=' + str(self.z) + ')\n')
+        self.log.write('   --+ Generating template line distribution\n') #TODO More info
+        self.log.write('   --+ Loading and correcting lines\n')
         db=DataBase(self.dbpath)
         db.connect()
         freq_init_corr = cube.freq_border[0] / (1 + self.z)
@@ -88,9 +87,10 @@ class IMCM(Component):
                 if temp < 2*cube.noise :
                    continue
                 freq = (1 + self.z) * lin[3] # Catalogs must be in Mhz 
-                self.log.write('E: ' + str(lin[2]) + ' (' + str(lin[1]) + ') around ' + str(freq) + ' Mhz, T = exp(-|' \
-                          + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(
-                    rinte) + ' = ' + str(temp) + ' K  ' + '\n')
+                self.log.write('      |- Projecting ' + str(lin[2]) + ' (' + str(lin[1]) + ') around ' + str(freq) + ' Mhz, at '+ str(temp) + ' K\n')
+#                          T = exp(-|' \
+#                          + str(trans_temp) + '-' + str(self.temp) + '|/' + str(self.temp) + ')*' + str(
+#                    rinte) + ' 
 
                 for xp in range(xbord[0],xbord[1]):
                     for yp in range(ybord[0],ybord[1]):

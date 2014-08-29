@@ -20,5 +20,5 @@ cube=univ.genCube('obs1',cspec)
 univ.saveCube(cube,'p33SO2-obs1.fits')
 plt.plot(cube.getSpectrum(0.0,1.0))
 plt.show()
-cube.animate(10,False)
+cube.animate(10,True)
 

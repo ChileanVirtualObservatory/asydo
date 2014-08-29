@@ -17,13 +17,16 @@ class Component:
         self.z=math.sqrt((1 + self.rv*KILO/SPEED_OF_LIGHT)/(1 - self.rv*KILO/SPEED_OF_LIGHT)) -1
 
     def info(self):
+        """Print relevant information of the component"""
         return "(none)"
     
     def register(self,comp_name,alpha,delta):
+        """Register the component name and position"""
         self.comp_name = comp_name
         self.alpha = alpha
         self.delta = delta
 
     def project(self,cube):
+        """Project the component in the cube"""
         pass
 

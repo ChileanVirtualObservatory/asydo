@@ -110,7 +110,6 @@ def parallelGen(samples,nproc):
    return result
 
 sample_size=30000
-      #info = np.asarray(result)
 CFParams.ban_list.append('Phosphapropynylidyne')
 negative=np.asarray(parallelGen(sample_size/2,4))
 CFParams.ban_list=list()
