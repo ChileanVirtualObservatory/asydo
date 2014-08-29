@@ -55,7 +55,7 @@ def genSurface(form,alpha,delta,alpha_axis,delta_axis):
        u = sqrt((XX / sx)**2 +  (YY / sy)**2)
        sol = sx * sy * np.exp(-u /sqrt(2))
     else :
-       print "ERROR: No such surface type"
+       print "!!! ERROR: No such surface type"
        return False,[ybord,xbord]
     #print alpha_axis
     #print delta_axis

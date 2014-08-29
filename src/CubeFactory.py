@@ -118,7 +118,6 @@ def parallelGen(samples,nproc):
 #result=np.vstack((negative,positive))
 #np.save('exp1.npy', result)
 
-
 #import cProfile
 #import re
 #cProfile.run('unitaryGen(0)')

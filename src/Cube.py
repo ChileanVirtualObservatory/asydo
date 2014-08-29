@@ -20,43 +20,45 @@ class Cube:
 
 
     def __init__(self, log, name, spec, band_freq=ALMA_bands,band_noises=ALMA_noises):
-        """ Parameters:
+        """ Obligatory Parameters:
                  log	: descriptor of a log file
-                 name : name of the cube
+                 name   : name of the cube
                  spec	: a CubeSpec specification
+            Optional Parameters:
+                 band_freq   : a diccionary of frequency ranges for the bands (key = band_name, value = (lower,upper))
+                 band_noises : a dictionary of noise levels for each band (key = band_name, value = noise)
             """
         self.name = name
         self.spec = spec
-        log.write('Generating cube ' + name + '\n')
-        log.write('  -> Angular Coordinates (deg): ra=' + str(spec.alpha)\
-                  + ' dec=' + str(spec.delta) + '\n')
+        log.write('[*] Generating cube ' + name + '\n')
+        log.write('  |- Angular Coordinates (deg): ra=' + str(spec.alpha) + ' dec=' + str(spec.delta) + '\n')
         fact = spec.ang_fov / DEG2ARCSEC
         self.alpha_border = [spec.alpha - fact / 2, spec.alpha + fact / 2]
         self.delta_border = [spec.delta - fact / 2, spec.delta + fact / 2]
         self.alpha_axis = np.linspace(self.alpha_border[0], self.alpha_border[1], int(spec.ang_fov / spec.ang_res))
         self.delta_axis = np.linspace(self.delta_border[0], self.delta_border[1], int(spec.ang_fov / spec.ang_res))
         if spec.alpha > 90 or spec.alpha < -90:
-            raise Exception('ERROR: invalid coordinate: ra=' + spec.alpha)
+            raise Exception('!!! ERROR: invalid coordinate: ra=' + spec.alpha)
         if spec.delta > 90 or spec.delta < -90:
-            raise Exception('ERROR: invalid coordinate: dec=' + spec.delta)
-        log.write('  -> FOV (arcsec): ra=' + str(self.alpha_border) + ' dec=' + str(self.delta_border) + '\n')
+            raise Exception('!!! ERROR: invalid coordinate: dec=' + spec.delta)
+        log.write('  |- FOV (arcsec): ra=' + str(self.alpha_border) + ' dec=' + str(self.delta_border) + '\n')
         self.freq_border = [spec.freq - spec.spe_bw / 2.0, spec.freq + spec.spe_bw / 2.0]
         if spec.spe_bw > MAX_BW:
-            log.write('WARNING: max ALMA bandwidth exceeded\n')
+            log.write('!!! WARNING: max ALMA bandwidth exceeded\n')
         self.channels = round(spec.spe_bw / spec.spe_res)
         if self.channels > MAX_CHANNELS:
-            log.write('WARNING: max ALMA channels exceeded\n')
+            log.write('!!! WARNING: max ALMA channels exceeded\n')
         self.freq_axis = np.linspace(self.freq_border[0], self.freq_border[1], self.channels)
-        log.write('  -> Spectral (MHz): center=' + str(spec.freq) + ' bandwidth=' + str(self.freq_border) + '\n')
-        log.write('  -> Cube size: ' + str(len(self.alpha_axis)) + ' x ' + str(len(self.delta_axis)) + ' x ' + str(len(self.freq_axis)) + ' \n')
+        log.write('  |- Spectral (MHz): center=' + str(spec.freq) + ' bandwidth=' + str(self.freq_border) + '\n')
+        log.write('  |- Cube size: ' + str(len(self.alpha_axis)) + ' x ' + str(len(self.delta_axis)) + ' x ' + str(len(self.freq_axis)) + ' \n')
         self.band = 'NO_BAND'
         for bnd in band_freq:
             freqs = band_freq[bnd]
             if self.freq_border[0] >= freqs[0] and self.freq_border[1] <= freqs[1]:
                 self.band = bnd
-                log.write('  -> Band: ' + bnd + '\n')
+                log.write('  |- Band: ' + bnd + '\n')
         if self.band == 'NO_BAND':
-            log.write('WARNING: not in a valid ALMA band\n')
+            log.write('!!! WARNING: not in a valid ALMA band\n')
         if self.band == 'NO_BAND':
             self.noise = 0.0001
         else:
