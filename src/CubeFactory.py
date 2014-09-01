@@ -1,6 +1,7 @@
 # Create several cubes in parallel, using random parameters
 from multiprocessing import Pool
 from Universe import *
+from Cube import *
 from IMCM import *
 from DataBase import *
 import math
@@ -100,7 +101,13 @@ def unitaryGen(n):
       cube=univ.genCube('AutoGenCube-'+str(n),cspec)
       db.disconnect()
       log.close()
-      return cube.data.flatten()
+      return cube
+
+def unitaryGenWrap(n):
+   try:
+      return(unitaryGen(n))
+   except:
+      print('%d: %s' % (n, traceback.format_exc()))
 
 def parallelGen(samples,nproc):
    global run

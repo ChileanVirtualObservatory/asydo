@@ -4,14 +4,23 @@ from CubeFactory import *
 
 global CFParams
 
-sample_size=30000
+sample_size=30
+cores=8
 CFParams.ban_list.append('Phosphapropynylidyne')
-negative=np.asarray(parallelGen(sample_size/2,4))
+cubes=parallelGen(sample_size/2,cores)
+data=[]
+for cube in cubes:
+   data.append(cube.data.flatten())
+negative=np.asarray(data)
 CFParams.ban_list=list()
 CFParams.force_list.append('Phosphapropynylidyne')
-positive=np.asarray(parallelGen(sample_size/2,4))
+cubes=parallelGen(sample_size/2,cores)
+data=[]
+for cube in cubes:
+   data.append(cube.data.flatten())
+positive=np.asarray(data)
 result=np.vstack((negative,positive))
-np.save('exp1.npy', result)
+np.save('test.npy', result)
 
 
 #import cProfile

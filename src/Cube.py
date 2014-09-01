@@ -63,7 +63,7 @@ class Cube:
             self.noise = 0.0001
         else:
             self.noise = band_noises[self.band]
-        self.data = np.random.random((len(self.freq_axis),len(self.delta_axis),len(self.alpha_axis))) * self.noise
+        self.data = (np.random.random((len(self.freq_axis),len(self.delta_axis),len(self.alpha_axis)))- 0.5*np.ones((len(self.freq_axis),len(self.delta_axis),len(self.alpha_axis))))*2 * self.noise
         self.hdulist = fits.HDUList([self.getCubeHDU()])
 
 
