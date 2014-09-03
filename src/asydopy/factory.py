@@ -1,5 +1,6 @@
 # Create several cubes in parallel, using random parameters
 from multiprocessing import Pool
+import multiprocessing
 from vu import *
 from db import *
 import math
@@ -10,6 +11,7 @@ import os
 import time
 import matplotlib.pyplot as plt
 import copy
+import pickle
 
 #SPEED_OF_LIGHT = 299792458.0
 #KILO = 1000
@@ -58,7 +60,7 @@ class IMCConf:
       self.force_list=copy.deepcopy(template.force_list)
       self.ban_list  =copy.deepcopy(template.ban_list)
 
-def unitary_IMC(conf):
+def unitary_IMC_cube(conf):
     def rget(val):
          if isinstance(val,tuple):
              return random.uniform(val[0],val[1])
@@ -66,8 +68,8 @@ def unitary_IMC(conf):
              return val
     
     print "Generating cube", conf.number
-    db=DataBase(conf.dbpath)
-    db.connect()
+    dba=db.lineDB(conf.dbpath)
+    dba.connect()
     try:
       os.mkdir("logs")
     except OSError:
@@ -76,30 +78,30 @@ def unitary_IMC(conf):
     univ=Universe(log)
     xpos=rget(conf.x_pos)
     ypos=rget(conf.y_pos)
-    univ.createSource('AutoGenCube-'+str(conf.number),xpos,ypos)
+    univ.create_source('AutoGenCube-'+str(conf.number),xpos,ypos)
     fpos=rget(conf.f_pos)
     bw=rget(conf.bw)
     rv=rget(conf.rvel)
     lf=(fpos - bw/2.0)*math.sqrt((1 + rv*KILO/SPEED_OF_LIGHT)/(1 - rv*KILO/SPEED_OF_LIGHT))
     uf=(fpos + bw/2.0)
-    if (conf.molecules=="all"):
-        mlist=db.getMoleculeList(lf,uf)
+    if (conf.mol_list=="all"):
+        mlist=dba.getMoleculeList(lf,uf)
         chList=list()
         for mol in mlist:
            chList.append(mol[0])
     else:
-        chList=conf.molecules
+        chList=conf.mol_list
     temp=rget(conf.temp)
     #print chList
     # HERE Random selection of molecules
     for chName in chList:
        if chName in conf.ban_list:
-          log.write("Mol: "+chName[0]+" banned!")
+          log.write("Mol: "+chName+" banned!")
           continue
        if not (chName in conf.force_list):
           if random.random() > conf.mol_prob:
              continue
-       molist=db.getSpeciesList(chName,lf,uf)
+       molist=dba.getSpeciesList(chName,lf,uf)
        s_x=rget(conf.semiaxis)
        s_y=rget(conf.semiaxis)
        angle=rget(conf.angle)
@@ -110,27 +112,36 @@ def unitary_IMC(conf):
        for mol in molist:
           if mms!="":
              mms+=","
-          mms+=str(mol)
-       model=IMCM(log,conf.dbpath,mol,temp,('normal',s_x,s_y,angle),('skew',fw,curt),('linear',angle,rot))
+          mms+=str(mol[0])
+       model=IMCM(log,conf.dbpath,mms,temp,('normal',s_x,s_y,angle),('skew',fw,curt),('linear',angle,rot))
        model.set_radial_velocity(rv)
-       univ.add_component('AutoGenCube-'+str(n),model)
+       univ.add_component('AutoGenCube-'+str(conf.number),model)
     fov=rget(conf.fov)
     bw=rget(conf.bw)
-    cube=univ.gen_cube('AutoGenCube-'+str(n),xpos,ypos,fpos,fov/conf.spa_pix,fov,bw/conf.spe_pix,bw)
-    db.disconnect()
+    cube=univ.gen_cube('AutoGenCube-'+str(conf.number),xpos,ypos,fpos,fov/conf.spa_pix,fov,bw/conf.spe_pix,bw)
+    dba.disconnect()
     log.close()
     return cube
 
-def unitary_IMC_Wrap(n):
+def unitary_IMC(conf):
    try:
-      return(unitaryGen(n))
-   except:
-      print('%d: %s' % (n, traceback.format_exc()))
+      cube=unitary_IMC_cube(conf)
+      mstring=pickle.dumps(cube)
+      return mstring
+   except Exception as exp:
+      print(str(conf.number)+": ")
+      print(exp)
+      return exp
 
-def gen_IMC_cubes(confs,nproc):
-   p = Pool(len(confs))
-   result=p.map(unitary_IMC_Wrap,confs)
-   return result
+def gen_IMC_cubes(confs):
+    nproc=multiprocessing.cpu_count()
+    print "### Generating "+str(len(confs))+" cubes using "+str(nproc)+" processors ###"
+    p = Pool(nproc)
+    result=p.map(unitary_IMC,confs)
+    ret=list()
+    for ms in result:
+        ret.append(pickle.loads(ms))   
+    return ret
 
 #sample_size=30000
 #CFParams.ban_list.append('Phosphapropynylidyne')

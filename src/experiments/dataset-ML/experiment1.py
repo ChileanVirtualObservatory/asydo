@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 from asydopy import *
 import math
+import numpy as np
 
 sample_size=30
 dbpath="../../ASYDO"
@@ -22,14 +23,15 @@ template=factory.IMCConf(0,dbpath,
                 angle=(0,math.pi),
                 rot=(50,500),
                 curtosis=(-5,5))
-cores=8
+
 template.ban_list.append('Phosphapropynylidyne')
 conf_list=list()
-for i in range(1,sample_size/2):
+
+for i in range(0,sample_size/2):
     conf=factory.IMCConf(i)
     conf.set_params(template)
     conf_list.append(conf)
-cubes=factory.gen_IMC_cubes(conf_list,cores)
+cubes=factory.gen_IMC_cubes(conf_list)
 data=[]
 for cube in cubes:
    data.append(cube.data.flatten())
@@ -41,7 +43,7 @@ for i in range(sample_size/2,sample_size):
     conf=factory.IMCConf(i)
     conf.set_params(template)
     conf_list.append(conf)
-cubes=factory.gen_IMC_cubes(conf_list/2,cores)
+cubes=factory.gen_IMC_cubes(conf_list)
 data=[]
 for cube in cubes:
    data.append(cube.data.flatten())

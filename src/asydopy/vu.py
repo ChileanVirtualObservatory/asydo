@@ -94,7 +94,9 @@ def gen_line(spe_form,freq,axis):
     w = sigma/sqrt(1.0 - (2.0/pi)*d**2)
     e = freq - w*d*sqrt(2.0/pi)
     distro = skew(axis[window[0]:window[1]+1],e,w,a)
-    distro = distro / sum(distro)
+    ss = sum(distro)
+    if sum!=0:
+       distro = distro / ss
     return distro,window
 
 def spatial_window(alpha,delta,spx,spy,alpha_axis,delta_axis):
@@ -169,7 +171,9 @@ def gen_surface(form,alpha,delta,alpha_axis,delta_axis):
     else :
        print "!!! ERROR: No such surface type"
        return False,[ybord,xbord]
-    sol = sol/ max(sol)
+    mm=max(sol)
+    if mm != 0:
+       sol = sol/ mm
     res = np.reshape(sol, (len(delta_axis), len(alpha_axis)))
     return res,(ybord,xbord)
 
@@ -382,6 +386,7 @@ class SpectralCube:
         return hdu
 
     def _add_HDU(self,hdu):
+        pass
         self.hdulist.append(hdu)
 
     def save_fits(self, sources, filename):
