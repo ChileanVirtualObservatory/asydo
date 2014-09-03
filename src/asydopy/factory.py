@@ -1,9 +1,7 @@
 # Create several cubes in parallel, using random parameters
 from multiprocessing import Pool
-from Universe import *
-from Cube import *
-from IMCM import *
-from DataBase import *
+from vu import *
+from db import *
 import math
 import random
 import numpy as np
@@ -11,26 +9,17 @@ import sys
 import os
 import time
 import matplotlib.pyplot as plt
+import copy
 
-SPEED_OF_LIGHT = 299792458.0
-KILO = 1000
+#SPEED_OF_LIGHT = 299792458.0
+#KILO = 1000
 
-global CFParams
-
-
-def rget(val):
-   if isinstance(val,tuple):
-      return random.uniform(val[0],val[1])
-   else:
-      return val
-
-global run
-run=0
-
-class CFP:
-   def  __init__(self,dbpath,mol_prob=0.3,x_pos=0.0,y_pos=0.0,f_pos=300000,spa_pix=5,spe_pix=100,fov=500,bw=2000,rvel=(150,1000),temp=(50,500),semiaxis=(10,300),fwhm=(10,50),angle=(0,math.pi),rot=(50,500),curtosis=(-5,5)):
+class IMCConf:
+   def  __init__(self,number,dbpath="ASYDO",mol_list="all",mol_prob=0.3,x_pos=0.0,y_pos=0.0,f_pos=300000,spa_pix=5,spe_pix=100,fov=500,bw=2000,rvel=(150,1000),temp=(50,500),semiaxis=(10,300),fwhm=(10,50),angle=(0,math.pi),rot=(50,500),curtosis=(-5,5)):
       self.rvel=rvel
+      self.number=number
       self.mol_prob=mol_prob
+      self.mol_list=mol_list
       self.dbpath=dbpath
       self.x_pos=x_pos
       self.y_pos=y_pos
@@ -47,73 +36,100 @@ class CFP:
       self.curtosis=curtosis
       self.force_list=list()
       self.ban_list=list()
+   
+   def set_params(self,template):
+      self.rvel    =template.rvel
+      self.mol_prob=template.mol_prob
+      self.mol_list=template.mol_list
+      self.dbpath  =template.dbpath
+      self.x_pos   =template.x_pos
+      self.y_pos   =template.y_pos
+      self.f_pos   =template.f_pos
+      self.spa_pix =template.spa_pix
+      self.spe_pix =template.spe_pix
+      self.bw      =template.bw
+      self.fov     =template.fov
+      self.temp    =template.temp
+      self.semiaxis=template.semiaxis
+      self.fwhm    =template.fwhm
+      self.rot     =template.rot
+      self.angle   =template.angle
+      self.curtosis=template.curtosis
+      self.force_list=copy.deepcopy(template.force_list)
+      self.ban_list  =copy.deepcopy(template.ban_list)
 
-CFParams=CFP('ASYDO')
+def unitary_IMC(conf):
+    def rget(val):
+         if isinstance(val,tuple):
+             return random.uniform(val[0],val[1])
+         else:
+             return val
+    
+    print "Generating cube", conf.number
+    db=DataBase(conf.dbpath)
+    db.connect()
+    try:
+      os.mkdir("logs")
+    except OSError:
+      pass
+    log=open('logs/exp-c'+str(conf.number)+'.log', 'w')
+    univ=Universe(log)
+    xpos=rget(conf.x_pos)
+    ypos=rget(conf.y_pos)
+    univ.createSource('AutoGenCube-'+str(conf.number),xpos,ypos)
+    fpos=rget(conf.f_pos)
+    bw=rget(conf.bw)
+    rv=rget(conf.rvel)
+    lf=(fpos - bw/2.0)*math.sqrt((1 + rv*KILO/SPEED_OF_LIGHT)/(1 - rv*KILO/SPEED_OF_LIGHT))
+    uf=(fpos + bw/2.0)
+    if (conf.molecules=="all"):
+        mlist=db.getMoleculeList(lf,uf)
+        chList=list()
+        for mol in mlist:
+           chList.append(mol[0])
+    else:
+        chList=conf.molecules
+    temp=rget(conf.temp)
+    #print chList
+    # HERE Random selection of molecules
+    for chName in chList:
+       if chName in conf.ban_list:
+          log.write("Mol: "+chName[0]+" banned!")
+          continue
+       if not (chName in conf.force_list):
+          if random.random() > conf.mol_prob:
+             continue
+       molist=db.getSpeciesList(chName,lf,uf)
+       s_x=rget(conf.semiaxis)
+       s_y=rget(conf.semiaxis)
+       angle=rget(conf.angle)
+       rot=rget(conf.rot)
+       fw=rget(conf.fwhm)
+       curt=rget(conf.curtosis)
+       mms=""
+       for mol in molist:
+          if mms!="":
+             mms+=","
+          mms+=str(mol)
+       model=IMCM(log,conf.dbpath,mol,temp,('normal',s_x,s_y,angle),('skew',fw,curt),('linear',angle,rot))
+       model.set_radial_velocity(rv)
+       univ.add_component('AutoGenCube-'+str(n),model)
+    fov=rget(conf.fov)
+    bw=rget(conf.bw)
+    cube=univ.gen_cube('AutoGenCube-'+str(n),xpos,ypos,fpos,fov/conf.spa_pix,fov,bw/conf.spe_pix,bw)
+    db.disconnect()
+    log.close()
+    return cube
 
-def unitaryGen(n):
-      global CFParams, run
-      print "Generating cube", n
-      db=DataBase(CFParams.dbpath)
-      db.connect()
-      try:
-        os.mkdir("logs")
-      except OSError:
-        pass
-      log=open('logs/exp-r'+str(run)+"-c"+str(n)+'.log', 'w')
-      univ=Universe(log)
-      xpos=rget(CFParams.x_pos)
-      ypos=rget(CFParams.y_pos)
-      univ.createSource('AutoGenCube-'+str(n),xpos,ypos)
-      fpos=rget(CFParams.f_pos)
-      bw=rget(CFParams.bw)
-      rv=rget(CFParams.rvel)
-      lf=(fpos - bw/2.0)*math.sqrt((1 + rv*KILO/SPEED_OF_LIGHT)/(1 - rv*KILO/SPEED_OF_LIGHT))
-      uf=(fpos + bw/2.0)
-      chList=db.getMoleculeList(lf,uf)
-      temp=rget(CFParams.temp)
-      #print chList
-      # HERE Random selection of molecules
-      for chName in chList:
-         if chName[0] in CFParams.ban_list:
-            log.write("Mol: "+chName[0]+" banned!")
-            continue
-         if random.random() > CFParams.mol_prob:
-            if not (chName[0] in CFParams.force_list):
-               continue
-         molist=db.getSpeciesList(chName[0],lf,uf)
-         s_x=rget(CFParams.semiaxis)
-         s_y=rget(CFParams.semiaxis)
-         angle=rget(CFParams.angle)
-         rot=rget(CFParams.rot)
-         fw=rget(CFParams.fwhm)
-         curt=rget(CFParams.curtosis)
-         mms=""
-         for mol in molist:
-            if mms!="":
-               mms+=","
-            mms+=str(mol[0])
-         model=IMCM(log,mol[0],temp,('normal',s_x,s_y,angle),('skew',fw,curt),('linear',angle,rot))
-         model.setRadialVelocity(rv)
-         univ.addComponent('AutoGenCube-'+str(n),model)
-      fov=rget(CFParams.fov)
-      bw=rget(CFParams.bw)
-      cspec=CubeSpec(xpos,ypos,fpos,fov/CFParams.spa_pix,fov,bw/CFParams.spe_pix,bw)
-      cube=univ.genCube('AutoGenCube-'+str(n),cspec)
-      db.disconnect()
-      log.close()
-      return cube
-
-def unitaryGenWrap(n):
+def unitary_IMC_Wrap(n):
    try:
       return(unitaryGen(n))
    except:
       print('%d: %s' % (n, traceback.format_exc()))
 
-def parallelGen(samples,nproc):
-   global run
-   run+=1
-   p = Pool(nproc)
-   result=p.map(unitaryGen,range(samples))
+def gen_IMC_cubes(confs,nproc):
+   p = Pool(len(confs))
+   result=p.map(unitary_IMC_Wrap,confs)
    return result
 
 #sample_size=30000

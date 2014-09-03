@@ -1,1 +1,1 @@
-__all__ = ['vu','db']
+__all__ = ['vu','db','factory']

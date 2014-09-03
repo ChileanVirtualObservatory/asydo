@@ -22,10 +22,10 @@ for mol in molist:
    angle=random.uniform(0,math.pi)
    model=vu.IMCM(log,dbpath,mol,temp,('normal',s_x,s_y,angle),('skew',s_f,0),('linear',angle,rot))
    model.set_radial_velocity(rvel)
-   univ.addComponent('alone-'+mol,model)
+   univ.add_component('alone-'+mol,model)
    for i in range(49):
       fcenter=(276 + 2*i)*1000
-      cube=univ.genCube('alone-'+mol,0.0,counter,fcenter,10,800,2,2000)
-      univ.save_cube(sube, 'alone-'+mol+'-'+str(fcenter)+'.fits')
+      cube=univ.gen_cube('alone-'+mol,0.0,counter,fcenter,10,800,2,2000)
+      univ.save_cube(cube, 'alone-'+mol+'-'+str(fcenter)+'.fits')
    counter+=1
 

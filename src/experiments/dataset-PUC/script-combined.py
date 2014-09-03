@@ -23,6 +23,6 @@ for mol in molist:
    univ.add_component('combined-'+mol,model)
 for i in range(49):
    fcenter=(276 + 2*i)*1000
-   cube=univ.genCube('combined',0.0,0.0,fcenter,10,800,2,2000)
+   cube=univ.gen_cube('combined',0.0,0.0,fcenter,10,800,2,2000)
    univ.save_cube(cube,'combined-'+str(fcenter)+'.fits')
 
