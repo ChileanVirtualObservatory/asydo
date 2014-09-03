@@ -23,7 +23,7 @@ SqlEquivalent = {
 # db = DataBase("ASYDO.sqlite")
 # db.loadVoTable(location)
 #
-class DataBase:
+class lineDB:
     name = ""
     connected = False
     fields = []
