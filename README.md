@@ -43,18 +43,20 @@ For the same reason there is no automatic module instalation.
 
 
 ###  Installing ###
-As ASYDO should work as an installable python package, and it will be configured as such in a near future. For the moment, the ASYDO package (and other source files) 
+As ASYDO should work as an installable python package, and it will be configured as such in a near future. For the moment, the ASYDO package and database creation files
 should copy to your working directory. For example, in a unix-based system:
 
->  user@machine:~/yourproject$ cp -r ../path\_to\_asydo/ASYDO/src/\* .
+>  user@machine:~/yourproject$ cp -r ../path\_to\_ASYDO/src/asydopy .
+>  user@machine:~/yourproject$ cp ../path\_to\_ASYDO/src/dbCreator\* .
 
-### Database Download ### 
+### Database ###
+
 To create the database, go to /src/db and run dbCreator.py. By default, it will download a .csv from our server, and import it to a SQLITE database.
 If you want to import your spectral lines, we currently support 2 ways of doing this:
   * *By Custom .CSV*: To use this option, you must run dbCreator.py with the flag "-C", followed by the path to your .CSV
   * *By Query to a SLAP service*: To use this option, you must run dbCreator.py with the flag "-T", followed by the URL to the service.
 
 By default, the script will download the lines in range from 88 Ghz to 720 Ghz (the ALMA spectral Band)
-If you want to use a custom range you must add to the previous instruction the flag "-R", followed by you custom range in the format "minimal_frequency:maximum_frequency"
+If you want to use a custom range you must add to the previous instruction the flag "-R", followed by you custom range in the format "minimal\_frequency:maximum\_frequency"
 
 
