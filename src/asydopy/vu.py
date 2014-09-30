@@ -32,6 +32,18 @@ default_iso_abundance = {'13C': 1.0 / 30, '18O': 1.0 / 60, '17O': 1.0 / 120, '34
 ### Toolbox functions ###
 
 
+
+def fwhm2sigma(freq,fwhm):
+    """
+    Compute the sigma in MHz given a frequency in MHz and a fwhm in km/s
+    """
+    sigma = (fwhm * 1000 / S_FACTOR) * (freq / SPEED_OF_LIGHT)
+    return sigma
+
+def freq_correct(freq,rv):
+    freq_new = math.sqrt((1 + rv * KILO / SPEED_OF_LIGHT) / (1 - rv * KILO / SPEED_OF_LIGHT)) * freq
+    return freq_new
+
 def freq_window(freq, factor, axis):
     """
     Compute a window centered at freq within an axis.
@@ -96,7 +108,7 @@ def gen_line(spe_form, freq, axis):
     fwhm = spe_form[1]
     a = spe_form[2]
 
-    sigma = (fwhm * 1000 / S_FACTOR) * (freq / SPEED_OF_LIGHT)
+    sigma = fwhm2sigma(freq,fwhm)
     factor = 3 * sigma
     window = freq_window(freq, factor, axis)
     if window[0] > window[1]:
@@ -107,8 +119,9 @@ def gen_line(spe_form, freq, axis):
     e = freq - w * d * sqrt(2.0 / pi)
     distro = skew(axis[window[0]:window[1] + 1], e, w, a)
     ss = sum(distro)
-    if sum != 0:
+    if ss != 0:
         distro = distro / ss
+    #distro=np.sqrt(2*np.pi)*sigma*distro
     return distro, window
 
 
@@ -189,7 +202,7 @@ def gen_surface(form, alpha, delta, alpha_axis, delta_axis):
         u = sqrt((XX / sx) ** 2 + (YY / sy) ** 2)
         sol = sx * sy * np.exp(-u / sqrt(2))
     else:
-        print "!!! ERROR: No such surface type"
+        print('!!! ERROR: No such surface type')
         return False, [ybord, xbord]
     mm = max(sol)
     if mm != 0:
@@ -499,6 +512,7 @@ class IMCM(Component):
         return "mol_list = " + str(self.intens.keys()) + " @ spa_form=" + str(self.spa_form) + ", spe_form=" + str(
             self.spe_form) + ", z=" + str(self.z) + ", grad=" + str(self.z_grad)
 
+
     def project(self, cube):
         arr_code = []
         arr_mol = []
@@ -536,23 +550,18 @@ class IMCM(Component):
                 counter += 1
                 trans_temp = lin[5]
                 temp = np.exp(-abs(trans_temp - self.temp) / self.temp) * rinte
-                if temp < 2 * cube.noise:
+                if temp < 3 * cube.noise:
                     continue
                 freq = (1 + self.z) * lin[3]  # Catalogs must be in Mhz
                 self.log.write('      |- Projecting ' + str(lin[2]) + ' (' + str(lin[1]) + ') around ' + str(
                     freq) + ' Mhz, at ' + str(temp) + ' K\n')
                 for xp in range(xbord[0], xbord[1]):
                     for yp in range(ybord[0], ybord[1]):
-                        freq = math.sqrt((1 + (self.rv + G[yp - ybord[0], xp - xbord[0]]) * KILO / SPEED_OF_LIGHT) / (
-                            1 - (self.rv + G[yp - ybord[0], xp - xbord[0]]) * KILO / SPEED_OF_LIGHT)) * lin[3]
+                        freq = freq_correct(lin[3],self.rv + G[yp - ybord[0], xp - xbord[0]])
                         L, Lbord = gen_line(self.spe_form, freq, cube.freq_axis)
                         if isinstance(L, bool):
                             continue
-                        cube.data[Lbord[0]:Lbord[1] + 1, yp, xp] = cube.data[Lbord[0]:Lbord[1] + 1, yp, xp] + T[yp -
-                                                                                                                ybord[
-                                                                                                                    0], xp -
-                                                                                                                xbord[
-                                                                                                                    0]] * temp * L
+                        cube.data[Lbord[0]:Lbord[1] + 1, yp, xp] = cube.data[Lbord[0]:Lbord[1] + 1, yp, xp] + T[yp - ybord[0], xp - xbord[0]] * temp* L
                         used = True
 
                 arr_code.append(self.comp_name + '-r' + str(self.alpha) + '-d' + str(self.delta) + "-l" + str(counter))
