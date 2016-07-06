@@ -420,6 +420,16 @@ class SpectralCube:
         prihdr['SIMPLE'] = True
         # prihdr['BITPIX'] = 8
         prihdr['NAXIS'] = 3
+        prihdr['NAXIS1'] = len(self.alpha_axis)
+        prihdr['NAXIS2'] = len(self.delta_axis)
+        prihdr['NAXIS3'] = len(self.freq_axis)
+        prihdr['CTYPE3'] = "FREQ"
+        prihdr['CRVAL3'] = self.freq
+        prihdr['CRPIX3'] = int(len(self.freq_axis)/2)
+        prihdr['CDELT3'] = self.spe_res
+        prihdr['RESTFRQ'] = self.freq
+        prihdr['CUNIT3'] = "Hz"
+        prihdr['BUNIT'] = "JY/BEAM"
         hdu = fits.PrimaryHDU(header=prihdr)
         hdu.data = self.data
         return hdu
