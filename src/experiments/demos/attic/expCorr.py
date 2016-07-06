@@ -31,7 +31,7 @@ inte = 100
 cube = pickle.loads(factory.unitary_IMC(template))
 x = 0
 # fig=plt.figure()
-fig, axarr = plt.subplots(3, sharex=True)
+fig, axarr = plt.subplots(2, sharex=True)
 cwtmatr = []
 specm = []
 mmin = float('Inf')
@@ -39,29 +39,26 @@ mmax = float('-Inf')
 img = []
 img2 = []
 img3 = []
+widths = np.arange(1, 10, 0.2)
 for x in range(len(cube.alpha_axis)):
-    spec = cube.data[:, 0, x]
-    img2.append(axarr[1].plot(spec, 'b'))
-    wavelet = signal.ricker
-    widths = np.arange(2, 5, 0.2)
-    cmat = signal.cwt(spec, wavelet, widths)
-    for y in range(len(widths)):
-      img3.append(axarr[2].plot(cmat[y]))
-    cmax = cmat.max()
-    if cmax > mmax:
-        mmax = cmax
-    cmin = cmat.min()
-    if cmin < mmin:
-        mmin = cmin
-    cwtmatr.append(cmat)
+    for y in range(len(cube.alpha_axis)):
+       print x,y
+       spec = cube.data[:, y, x]
+       wavelet = signal.ricker
+       cmat = signal.cwt(spec, wavelet, widths)
+       cmax = cmat.max()
+       if cmax > mmax:
+           mmax = cmax
+       cmin = cmat.min()
+       if cmin < mmin:
+           mmin = cmin
+       cwtmatr.append(cmat)
 for cmat in cwtmatr:
     img.append([axarr[0].imshow(cmat, vmin=mmin, vmax=mmax)])
 
 ani = animation.ArtistAnimation(fig, img, interval=inte, blit=True,
                                 repeat=True)
 ani = animation.ArtistAnimation(fig, img2, interval=inte, blit=True,
-                                repeat=True)
-ani = animation.ArtistAnimation(fig, img3, interval=inte/len(widths), blit=True,
                                 repeat=True)
 plt.show()
 

@@ -13,7 +13,7 @@ from sklearn import metrics
 fwhm_bords=(0.8, 10)
 f_pos=290000
 bw=1000.0
-spa_pix=8
+spa_pix=20
 spe_pix=500
 wlvl=6
 wstp=10
