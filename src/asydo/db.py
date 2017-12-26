@@ -5,7 +5,7 @@ import math
 from astropy.io.votable.tree import Field as pField
 from astropy.io.votable import parse_single_table
 from astropy.io.votable.tree import Table as pTable
-import urllib2
+import urllib3
 import csv
 
 #TODO Standarise output to log.write
@@ -39,8 +39,8 @@ class lineDB:
         try:
             self.pointer = lite.connect(self.name+".sqlite")
             self.connected = True
-        except lite.Error, e:
-            print "Error %s:" % e.args[0]
+        except lite.Error as e:
+            print(e.args[0])
             sys.exit(1)
 
     def disconnect(self):
@@ -51,18 +51,21 @@ class lineDB:
     def executeSQL(self,sentence):
         #self.log.write("EXECUTING SQL SENTENCE:\n")
         #self.log.write(sentence + '\n')
+        print(sentence)
         resp = self.pointer.execute(sentence)
         return resp.fetchall()      
-    
+
     def getSpeciesLines(self,mol,freq_i,freq_e):
         select = "SELECT * FROM Lines WHERE SPECIES like '" + mol + "' AND FREQ > " + str(freq_i) + " AND FREQ < " + str(freq_e)
         return self.executeSQL(select)
  
     def getMoleculeList(self,freq_i,freq_e):
+        # TODO: fix units or remove it
         select = "SELECT DISTINCT CHEM_NAME FROM Lines WHERE FREQ > " + str(freq_i) + " AND FREQ < " + str(freq_e)
         return self.executeSQL(select)
 
     def getSpeciesList(self,chem_name,freq_i,freq_e):
+        # TODO: fix units this or remove it
         select = "SELECT DISTINCT SPECIES FROM Lines WHERE CHEM_NAME like '" + chem_name + "' AND FREQ > " + str(freq_i) + " AND FREQ < " + str(freq_e)
         return self.executeSQL(select)
    
@@ -77,8 +80,8 @@ class lineDB:
         curl = source + data.encode('utf-8')
         log.write('  -> Downloading lines via %s:\n' % source)
         log.write('  -> ' + curl + '\n')
-        req = urllib2.Request(curl)
-        response = urllib2.urlopen(req)
+        req = urllib3.Request(curl)
+        response = urllib3.urlopen(req)
         votable = response.read()
         location = './votables/customVOTable.xml'
         f = open(location, 'w')
@@ -133,6 +136,7 @@ class lineDB:
             count += 1
 
         command = command + ")"
+
         self.printTableDef(output_command)
         self.connect()
         self.pointer.execute(command)
@@ -169,8 +173,8 @@ class lineDB:
                         else:
                             command = command + str(0)
                     else:
-                        print type(value).__name__
-                        print "Data Type not supported. Data not inserted in database. Exiting now!"
+                        print(type(value).__name__)
+                        print("Data Type not supported. Data not inserted in database. Exiting now!")
                         sys.exit()
                 counter+=1
             command = command + ")"
@@ -222,7 +226,7 @@ class lineDB:
                     try:
                        self.pointer.execute(drop)
                     except lite.OperationalError:
-                       print "\tWARNING: Drop failed\n"
+                       print("\tWARNING: Drop failed\n")
                     self.pointer.execute(create)
                     counter+=1
                 else:

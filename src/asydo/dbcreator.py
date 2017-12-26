@@ -3,7 +3,7 @@ import time
 import urllib
 import os
 
-from asydopy import *
+from .db import *
 
 default_url = "http://www.csrg.cl/~maray/splatalogue.csv"
 default_csv_name = "lines2.csv"
@@ -12,7 +12,7 @@ csv = False
 URI = ""
 log = sys.stdout
 
-database = db.lineDB(default_db_name)
+database = lineDB(default_db_name)
 
 def reporthook(count, block_size, total_size):
     global start_time
@@ -65,8 +65,6 @@ elif (len(sys.argv)>2):
         database.VOGetLines(log,URI,w_range)
         database.loadVoTable("./votables/customVOTable.xml",{3:"FREQ",4:"SPECIES",5:"CHEM_NAME",7:"INTENSITY",11:"EL"})
         complete = True
-
-
     else:
         helper(log)
 else:
