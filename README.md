@@ -33,7 +33,7 @@ For obtaining the ASYDO source code you can download it via web (Download ZIP li
 
 > git clone https://github.com/ChileanVirtualObservatory/ASYDO.git
 
-The current version of the development branch is `0.1.1`
+The current version of the development branch is `0.1.2`
 
 ### Installing
 
