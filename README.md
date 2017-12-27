@@ -24,30 +24,36 @@ We propose an Astronomical SYnthetic Data Observatory (ASYDO), a virtual service
 
 ## Downloading and Installing ##
 
-ASYDO is a free software (GPL) mostly in Python by the LIRAE group. Any contribution, including comments, ideas, critisism, code or complains are very welcome. 
+ASYDO is a free software (GPL) mostly in Python by the LIRAE group. Any contribution, including comments, ideas, critisism, code or complains are very welcome.
 ASYDO's development is managed by GitHub's [ChileanVirtualObservatory platform](https://github.com/ChileanVirtualObservatory/ASYDO) . Feel free to contact us through GitHub!
-Downloading ASYDO
-For obtaining ASYDO you can download it via web (Download ZIP link), or you can download the development repository using git:
+
+### Getting the sources
+
+For obtaining the ASYDO source code you can download it via web (Download ZIP link), or you can download the repository using git:
 
 > git clone https://github.com/ChileanVirtualObservatory/ASYDO.git
 
-There is no stable release of ASYDO yet, so there is no version numbering yet... (or if you prefer we are in version 0.09-alpha :P).
-For the same reason there is no automatic module instalation. 
+The current version of the development branch is `0.1.0.dev1`
+
+### Installing
+
+Currenty whe have the following installation methods:
+
+ * pypi package:
+
+    Install with the command `pip install asydo==0.1.0.dev1` and it will resolve all the dependencies automatically.
+
+ * conda package:
+
+    TODO
 
 ### Dependencies ###
+
  * scipy
  * numpy
  * matplotlib
- * astropy 
- * pysqlite
-
-
-###  Installing ###
-As ASYDO should work as an installable python package, and it will be configured as such in a near future. For the moment, the ASYDO package and database creation files
-should copy to your working directory. For example, in a unix-based system:
-
->  user@machine:~/yourproject$ cp -r ../path\_to\_ASYDO/src/asydopy .
->  user@machine:~/yourproject$ cp ../path\_to\_ASYDO/src/dbCreator\* .
+ * astropy
+ * pysqlite (python 2)
 
 ### Database ###
 
@@ -58,5 +64,3 @@ If you want to import your spectral lines, we currently support 2 ways of doing 
 
 By default, the script will download the lines in range from 88 Ghz to 720 Ghz (the ALMA spectral Band)
 If you want to use a custom range you must add to the previous instruction the flag "-R", followed by you custom range in the format "minimal\_frequency:maximum\_frequency"
-
-
