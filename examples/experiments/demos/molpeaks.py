@@ -3,7 +3,7 @@ import numpy as np
 from scipy import signal
 import math
 from matplotlib import pyplot as plt
-from asydopy import factory, vu
+from asydo import factory, vu
 import astropy
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.cluster import AffinityPropagation
@@ -157,7 +157,7 @@ n_clusters=10
 #   print i
 DAT=np.array(ALL)
 #print ALL
-labels=KMeans(init='k-means++', n_clusters=n_clusters).fit_predict(DAT) 
+labels=KMeans(init='k-means++', n_clusters=n_clusters).fit_predict(DAT)
 #af = AffinityPropagation().fit(DAT)
 #cluster_centers_indices = af.cluster_centers_indices_
 #labels = af.labels_
@@ -186,7 +186,7 @@ for i in range(n_clusters):
       count+=1
    plt.imshow(img)
    plt.show()
-   
+
 #ax = fig.add_subplot(1,1,1, projection='3d')
 #ax.scatter(X[0], Y[0], F[0], c=labels)
 
@@ -209,7 +209,7 @@ for i in range(n_clusters):
 #amps=amps.clip(min=0)
 #
 #print "peaks GS"
-#print pks 
+#print pks
 #
 #print "real GS"
 #print len(real_lines)

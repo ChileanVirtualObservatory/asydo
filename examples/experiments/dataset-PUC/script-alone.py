@@ -1,4 +1,4 @@
-from asydopy import *
+from asydo import *
 import random
 import math
 import sys
@@ -28,4 +28,3 @@ for mol in molist:
       cube=univ.gen_cube('alone-'+mol,0.0,counter,fcenter,10,800,2,2000)
       univ.save_cube(cube, 'alone-'+mol+'-'+str(fcenter)+'.fits')
    counter+=1
-

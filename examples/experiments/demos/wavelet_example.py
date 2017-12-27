@@ -2,7 +2,7 @@
 
 import matplotlib
 matplotlib.use('TkAgg')
-from asydopy import *
+from asydo import *
 import matplotlib.pyplot as plt
 from scipy import signal
 import time
@@ -68,4 +68,3 @@ ani = animation.ArtistAnimation(fig, img2, interval=inte, blit=True,
 ani = animation.ArtistAnimation(fig, img3, interval=inte/len(widths), blit=False,
                                 repeat=True)
 plt.show()
-

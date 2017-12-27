@@ -1,4 +1,4 @@
-from asydopy import *
+from asydo import *
 import matplotlib.pyplot as plt
 import sys
 import math
@@ -20,4 +20,3 @@ univ.save_cube(cube,'p33SO2-obs1.fits')
 plt.plot(cube.get_spectrum(0.0,1.0))
 plt.show()
 cube.animate(10,True)
-

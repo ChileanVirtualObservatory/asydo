@@ -1,6 +1,6 @@
 # Create several cubes in parallel, using random parameters
 import matplotlib.pyplot as plt
-from asydopy import *
+from asydo import *
 import math
 import numpy as np
 

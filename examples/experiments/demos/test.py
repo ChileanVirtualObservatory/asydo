@@ -2,7 +2,7 @@ import numpy as np
 from scipy import signal
 import math
 from matplotlib import pyplot as plt
-from asydopy import factory, vu
+from asydo import factory, vu
 import astropy
 
 al_axis= np.arange(-2,2,0.01)
@@ -28,5 +28,3 @@ print len(distro)
 print len(freq_axis[win[0]:win[1]])
 plt.plot(freq_axis[win[0]:win[1]+1],distro)
 plt.show()
-
-

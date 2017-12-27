@@ -1,5 +1,5 @@
 # Create several cubes in parallel, using random parameters
-from asydopy import *
+from asydo import *
 import matplotlib.pyplot as plt
 from scipy import signal
 import time
@@ -61,4 +61,3 @@ ani = animation.ArtistAnimation(fig, img, interval=inte, blit=True,
 ani = animation.ArtistAnimation(fig, img2, interval=inte, blit=True,
                                 repeat=True)
 plt.show()
-

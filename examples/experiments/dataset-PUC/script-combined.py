@@ -1,4 +1,4 @@
-from asydopy import *
+from asydo import *
 import random
 import math
 import sys
@@ -25,4 +25,3 @@ for i in range(49):
    fcenter=(276 + 2*i)*1000
    cube=univ.gen_cube('combined',0.0,0.0,fcenter,10,800,2,2000)
    univ.save_cube(cube,'combined-'+str(fcenter)+'.fits')
-

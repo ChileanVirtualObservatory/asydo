@@ -3,7 +3,7 @@ import numpy as np
 from scipy import signal
 import math
 from matplotlib import pyplot as plt
-from asydopy import factory, vu
+from asydo import factory, vu
 import astropy
 #from scipy.optimize import leastsq
 from lmfit.models import GaussianModel
@@ -136,7 +136,7 @@ amps=y_real[peakind]/twopisig
 amps=amps.clip(min=0)
 
 print "peaks GS"
-print pks 
+print pks
 
 print "real GS"
 print len(real_lines)
@@ -187,9 +187,3 @@ axarr[3].scatter(fq,tp,s=areafit,alpha=0.7)
 #plt.colorbar(im2)
 plt.legend()
 plt.show()
-
-
-
-
-
-
