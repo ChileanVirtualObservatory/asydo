@@ -588,14 +588,15 @@ class IMCM(Component):
         hduT.data = T;
         hduG = fits.PrimaryHDU()
         hduG.data = G;
-        tbhdu = fits.new_table(fits.ColDefs([
+        table_columns = fits.ColDefs([
             fits.Column(name='line_code', format='60A', array=arr_code),
             fits.Column(name='mol', format='20A', array=arr_mol), \
             fits.Column(name='chname', format='40A', array=arr_chname), \
             fits.Column(name='rest_freq', format='D', array=arr_rest_freq), \
             fits.Column(name='rad_vel', format='D', array=arr_rad_vel), \
             fits.Column(name='fwhm', format='D', array=arr_fwhm), \
-            fits.Column(name='temp', format='D', array=arr_temp)]))
+            fits.Column(name='temp', format='D', array=arr_temp)])
+        tbhdu = fits.BinTableHDU.from_columns(table_columns)
         cube._add_HDU(hduT)
         cube._add_HDU(hduG)
         cube._add_HDU(tbhdu)
