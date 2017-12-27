@@ -39,5 +39,6 @@ setup(
     zip_safe = True,
     package_dir = {'': 'src'},
     packages = ['asydo'],
+    scripts = ['src/dbCreator.py'],
     install_requires = get_dependencies()
 )
