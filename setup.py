@@ -17,7 +17,7 @@ def get_python_classifier():
 
 setup(
     name = 'asydo',
-    version = '0.1.0',
+    version = '0.1.1',
     description = 'Astronomical Syntetic Data Observations',
     long_description='''
             We propose an Astronomical SYnthetic Data Observatory (ASYDO),
