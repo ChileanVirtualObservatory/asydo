@@ -16,9 +16,9 @@ def get_python_classifier():
         return 'Programming Language :: Python :: 3.6'
 
 setup(
-    name = 'asydo',
-    version = '0.1.0.dev1',
-    description = 'Astronomical Syntetic Data Observations',
+    name = 'asydo-dev',
+    version = '0.1.0',
+    description = 'Astronomical Syntetic Data Observations - Development branch',
     long_description='''
             We propose an Astronomical SYnthetic Data Observatory (ASYDO),
             a virtual service that generates synthetic spectroscopic data in
