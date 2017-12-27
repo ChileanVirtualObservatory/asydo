@@ -2,3 +2,5 @@ build/
 dist/
 *.sqlite
 *.csv
+*.fits
+asydo.egg-info/
