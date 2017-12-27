@@ -17,7 +17,7 @@ def get_python_classifier():
 
 setup(
     name = 'asydo-dev',
-    version = '0.1.1',
+    version = '0.1.2',
     description = 'Astronomical Syntetic Data Observations - Development branch',
     long_description='''
             We propose an Astronomical SYnthetic Data Observatory (ASYDO),
@@ -39,5 +39,6 @@ setup(
     zip_safe = True,
     package_dir = {'': 'src'},
     packages = ['asydo'],
+    scripts = ['src/dbCreator.py'],
     install_requires = get_dependencies()
 )
