@@ -24,39 +24,40 @@ We propose an Astronomical SYnthetic Data Observatory (ASYDO), a virtual service
 
 ## Downloading and Installing ##
 
-ASYDO is a free software (GPL) mostly in Python by the LIRAE group. Any contribution, including comments, ideas, critisism, code or complains are very welcome. 
+ASYDO is a free software (GPL) mostly in Python by the LIRAE group. Any contribution, including comments, ideas, critisism, code or complains are very welcome.
 ASYDO's development is managed by GitHub's [ChileanVirtualObservatory platform](https://github.com/ChileanVirtualObservatory/ASYDO) . Feel free to contact us through GitHub!
-Downloading ASYDO
+
+### Getting the sources
+
 For obtaining ASYDO you can download it via web (Download ZIP link), or you can download the development repository using git:
 
 > git clone https://github.com/ChileanVirtualObservatory/ASYDO.git
 
-There is no stable release of ASYDO yet, so there is no version numbering yet... (or if you prefer we are in version 0.09-alpha :P).
-For the same reason there is no automatic module instalation. 
-
-### Dependencies ###
- * scipy
- * numpy
- * matplotlib
- * astropy 
- * pysqlite
-
+The current version of the master branch is `0.1.1`
 
 ###  Installing ###
-As ASYDO should work as an installable python package, and it will be configured as such in a near future. For the moment, the ASYDO package and database creation files
-should copy to your working directory. For example, in a unix-based system:
 
->  user@machine:~/yourproject$ cp -r ../path\_to\_ASYDO/src/asydopy .
->  user@machine:~/yourproject$ cp ../path\_to\_ASYDO/src/dbCreator\* .
+Currenty whe have the following installation methods:
+
+- pypi package:
+
+    Install with the command `pip install asydo` and it will resolve all the dependencies automatically.
+
+- conda package:
+
+    TODO
+
+This will also install a `dbCreator.py` script that we will use in the next step.
 
 ### Database ###
 
-To create the database, go to /src/db and run dbCreator.py. By default, it will download a .csv from our server, and import it to a SQLITE database.
+To create the database, run `dbCreator.py` in your terminal. By default, this it will download a .csv from our server, and import it to a SQLITE database.
+
 If you want to import your spectral lines, we currently support 2 ways of doing this:
-  * *By Custom .CSV*: To use this option, you must run dbCreator.py with the flag "-C", followed by the path to your .CSV
-  * *By Query to a SLAP service*: To use this option, you must run dbCreator.py with the flag "-T", followed by the URL to the service.
+  * By Custom `file.csv`: To use this option, you must run `dbCreator.py -C /path/to/file.csv`
 
-By default, the script will download the lines in range from 88 Ghz to 720 Ghz (the ALMA spectral Band)
-If you want to use a custom range you must add to the previous instruction the flag "-R", followed by you custom range in the format "minimal\_frequency:maximum\_frequency"
+  * By Query to a `SLAP` service: To use this option, you must run `dbCreator.py -T [ServiceURL]`
 
+By default, the script will download the lines in range from **88 Ghz to 720 Ghz** (the ALMA spectral Band)
 
+If you want to use a custom range you must add to the previous instruction: ` -R minfreq:maxfreq`
