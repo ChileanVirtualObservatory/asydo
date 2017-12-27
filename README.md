@@ -33,7 +33,7 @@ For obtaining the ASYDO source code you can download it via web (Download ZIP li
 
 > git clone https://github.com/ChileanVirtualObservatory/ASYDO.git
 
-The current version of the development branch is `0.1.0.dev1`
+The current version of the development branch is `0.1.1`
 
 ### Installing
 
@@ -41,7 +41,7 @@ Currenty whe have the following installation methods:
 
  * pypi package:
 
-    Install with the command `pip install asydo==0.1.0.dev1` and it will resolve all the dependencies automatically.
+    Install with the command `pip install asydo-dev` and it will resolve all the dependencies automatically.
 
  * conda package:
 
