@@ -5,7 +5,7 @@ import matplotlib.animation as animation
 from astropy.io import fits
 from scipy import pi, sqrt, exp
 import math
-import db
+from . import db
 from scipy.special import erf
 
 
@@ -69,24 +69,24 @@ def freq_window(freq, factor, axis):
 
 
 def gen_line(spe_form, freq, axis):
-    """ 
+    """
     Returns a spectral line distribution and its application window.
 
-    gen_line() generates a normalized distribution (with compact support) 
-    of a spectral line centered at freq, within an axis. The spe_form 
-    parameter is a tuple where the first element is the name of the 
-    distribution, and the next elements are their parameters. 
-    
+    gen_line() generates a normalized distribution (with compact support)
+    of a spectral line centered at freq, within an axis. The spe_form
+    parameter is a tuple where the first element is the name of the
+    distribution, and the next elements are their parameters.
+
     The available distributions are:
-    - ("skew",fwhm,alpha) : a skew-normal distribution, where fwhm is 
-              the full width at half maximum, and alpha is the curtosis 
-              parameter. If alpha = 0, it degenerates to a Gaussian 
+    - ("skew",fwhm,alpha) : a skew-normal distribution, where fwhm is
+              the full width at half maximum, and alpha is the curtosis
+              parameter. If alpha = 0, it degenerates to a Gaussian
               distribution, if alpha < 0, the distribution is left-biased
               and alpha > 0 means a right bias.
     - TODO: implement more spectral distributions
-    
+
     The function returns the tuple (distro,window), where distro is the
-    spectral distribution (array), and window is a tuple of upper and 
+    spectral distribution (array), and window is a tuple of upper and
     lower indices (see freq_window function). The window factor is 3*sigma
     to include relatively large tails.
     @rtype : tuple
@@ -129,9 +129,9 @@ def spatial_window(alpha, delta, spx, spy, alpha_axis, delta_axis):
     """
     Compute a 2D window centered at (alpha,delta) within alpha_axis and delta_axis.
 
-    spatial_window() returns a tuple (alpha_window,delta_window), where each element 
+    spatial_window() returns a tuple (alpha_window,delta_window), where each element
     are the lower and upper indices for each axis. The window correspond to a window
-    of freq +- spx or freq +- spy depending on the axis. This window is limited by 
+    of freq +- spx or freq +- spy depending on the axis. This window is limited by
     the axis borders. Equispaced axes are assumed.
     @rtype : tuple
     @param alpha: RA center
@@ -157,27 +157,27 @@ def spatial_window(alpha, delta, spx, spy, alpha_axis, delta_axis):
 
 
 def gen_surface(form, alpha, delta, alpha_axis, delta_axis):
-    """ 
+    """
     Returns a spatial distribution and its application window.
 
-    gen_surface() generates a standarized surface distribution 
-    (with compact support) centered at (alpha,delta), within the axes. 
-    The spa_form parameter is a tuple where the first element is the 
-    name of the distribution, and the next elements are their parameters. 
-    
+    gen_surface() generates a standarized surface distribution
+    (with compact support) centered at (alpha,delta), within the axes.
+    The spa_form parameter is a tuple where the first element is the
+    name of the distribution, and the next elements are their parameters.
+
     The available distributions are:
-    - ("normal",sx,sy,theta) : a 2D Gaussian (normal) distribution, 
-                with diagonal covariance [[sx,0],[0,sy], rotated by 
+    - ("normal",sx,sy,theta) : a 2D Gaussian (normal) distribution,
+                with diagonal covariance [[sx,0],[0,sy], rotated by
                 theta (in radians!).
     - ("exp",sx,sy,theta) : exponential distribution, with semiaxes
                 sx and sy, rotated by theta (in radians!).
     - TODO: implement more spatial distributions
-                               
-    The function returns the tuple (distro,ybord,xbord), where distro is 
-    the spatial distribution (matrix), and ybord and xbord are the tuples 
+
+    The function returns the tuple (distro,ybord,xbord), where distro is
+    the spatial distribution (matrix), and ybord and xbord are the tuples
     of upper and lower indices for the axes (see spatial_window function).
     If the window is spurious (out of the axes or too small) this function
-    returns False.   
+    returns False.
     """
     stype = form[0]
     sx = form[1] / DEG2ARCSEC
@@ -216,8 +216,8 @@ def gen_gradient(form, alpha, delta, alpha_axis, delta_axis, ybord, xbord):
     Returns a matrix with gradient values within the axes, restricted to y_bord and x_bord.
 
     gen_gradient() generate a gradient matrix centered at (alpha,delta), for the alpha_axis
-    and delta_axis, restricted by the windows ybord and xbord. The form parameter is a tuple 
-    where the first element is the gradient function, and the next elements are their parameters. 
+    and delta_axis, restricted by the windows ybord and xbord. The form parameter is a tuple
+    where the first element is the gradient function, and the next elements are their parameters.
     The available gradient functions are:
     - ("linear", theta, m) : linear gradient, rotated by theta, and intensity m (km/s/arcsec)
     """
@@ -257,7 +257,7 @@ class Universe:
 
     def add_component(self, source_name, model):
         """
-        To add a component a Component object must be instantiated (model), and added to 
+        To add a component a Component object must be instantiated (model), and added to
         a source called source_name.
         """
         self.sources[source_name].add_component(model)
@@ -306,7 +306,7 @@ class Source:
         """ Parameters:
                * log: logging descriptor
                * name: a name of the source
-               * alpha: right ascension 
+               * alpha: right ascension
                * delta: declination
         """
         self.log = log
@@ -341,7 +341,7 @@ class SpectralCube:
 
     def __init__(self, log, name, alpha, delta, freq, ang_res, ang_fov, spe_res, spe_bw, band_freq=ALMA_bands,
                  band_noises=ALMA_noises):
-        """ 
+        """
         Obligatory Parameters:
         - log	  : descriptor of a log file
         - name    : name of the cube
@@ -352,7 +352,7 @@ class SpectralCube:
         - ang_fov : angular field of view
         - spe_res : spectral resolution
         - spe_bw  : spectral bandwidth
-                 
+
         Optional Parameters:
         - band_freq   : a diccionary of frequency ranges for the bands (key = band_name, value = (lower,upper))
         - band_noises : a dictionary of noise levels for each band (key = band_name, value = noise)
@@ -599,6 +599,3 @@ class IMCM(Component):
         cube._add_HDU(hduT)
         cube._add_HDU(hduG)
         cube._add_HDU(tbhdu)
-
-
-

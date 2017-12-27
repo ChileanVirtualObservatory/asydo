@@ -1,8 +1,8 @@
 # Create several cubes in parallel, using random parameters
 from multiprocessing import Pool
 import multiprocessing
-from vu import *
-from db import *
+from .vu import *
+from .db import *
 import math
 import random
 import numpy as np
@@ -38,7 +38,7 @@ class IMCConf:
       self.curtosis=curtosis
       self.force_list=list()
       self.ban_list=list()
-   
+
    def set_params(self,template):
       self.rvel    =template.rvel
       self.mol_prob=template.mol_prob
@@ -66,8 +66,8 @@ def unitary_IMC_cube(conf):
              return random.uniform(val[0],val[1])
          else:
              return val
-    
-    print "Generating cube", conf.number
+
+    print("Generating cube", conf.number)
     dba=db.lineDB(conf.dbpath)
     dba.connect()
     try:
@@ -135,12 +135,12 @@ def unitary_IMC(conf):
 
 def gen_IMC_cubes(confs):
     nproc=multiprocessing.cpu_count()
-    print "### Generating "+str(len(confs))+" cubes using "+str(nproc)+" processors ###"
+    print("### Generating "+str(len(confs))+" cubes using "+str(nproc)+" processors ###")
     p = Pool(nproc)
     result=p.map(unitary_IMC,confs)
     ret=list()
     for ms in result:
-        ret.append(pickle.loads(ms))   
+        ret.append(pickle.loads(ms))
     return ret
 
 
