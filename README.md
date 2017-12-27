@@ -1,6 +1,6 @@
 ﻿
 
-# ASYDO (Astronomical Syntetic Data Observations) #
+# ASYDO (Astronomical Synthetic Data Observations) #
 
 The objective of this project is to generate synthetic cubes of spectral data, similar to those that ALMA generates.
 
@@ -19,12 +19,12 @@ Unfortunately, these techniques are usually sub-optimal, stochastic and strongly
 
 ### Our Proposal ###
 
-We propose an Astronomical SYnthetic Data Observatory (ASYDO), a virtual service that generates synthetic spectroscopic data in the form of data cubes. The objective of the tool is not to produce accurate astrophysical simulations, but to generate a large number of labelled synthetic data, to assess advanced computing algorithms for astronomy and to develop novel Big Data algorithms. The synthetic data is generated using a set of spectral lines, template functions for spatial and spectral distributions, and simple models that produce reasonable synthetic observations. Emission lines are obtained automatically using IVOA's SLAP protocol (or from a relational database) and their spectral profiles correspond to distributions in the exponential family. The spatial distributions correspond to simple functions (e.g., 2D Gaussian), or to scalable template objects. The intensity, broadening and radial velocity of each line is given by very simple and naive physical models, yet ASYDO's generic implementation supports new user-made models, which potentially allows adding more realistic simulations. The resulting data cube is saved as a FITS file, also including all the tables and images used for generating the cube. We expect to implement ASYDO as a virtual observatory service in the near future.
+We propose an Astronomical Synthetic Data Observatory (ASYDO), a virtual service that generates synthetic spectroscopic data in the form of data cubes. The objective of the tool is not to produce accurate astrophysical simulations, but to generate a large number of labeled synthetic data, to assess advanced computing algorithms for astronomy and to develop novel Big Data algorithms. The synthetic data is generated using a set of spectral lines, template functions for spatial and spectral distributions, and simple models that produce reasonable synthetic observations. Emission lines are obtained automatically using IVOA's SLAP protocol (or from a relational database) and their spectral profiles correspond to distributions in the exponential family. The spatial distributions correspond to simple functions (e.g., 2D Gaussian), or to scalable template objects. The intensity, broadening and radial velocity of each line is given by very simple and naive physical models, yet ASYDO's generic implementation supports new user-made models, which potentially allows adding more realistic simulations. The resulting data cube is saved as a FITS file, also including all the tables and images used for generating the cube. We expect to implement ASYDO as a virtual observatory service in the near future.
 
 
 ## Downloading and Installing ##
 
-ASYDO is a free software (GPL) mostly in Python by the LIRAE group. Any contribution, including comments, ideas, critisism, code or complains are very welcome.
+ASYDO is a free software (GPL) mostly in Python by the LIRAE group. Any contribution, including comments, ideas, criticism, code or complains are very welcome.
 ASYDO's development is managed by GitHub's [ChileanVirtualObservatory platform](https://github.com/ChileanVirtualObservatory/ASYDO) . Feel free to contact us through GitHub!
 
 ### Getting the sources
@@ -37,7 +37,7 @@ The current version of the master branch is `0.1.1`
 
 ###  Installing ###
 
-Currenty whe have the following installation methods:
+Currently we have the following installation methods:
 
 - pypi package:
 
