@@ -1,6 +1,6 @@
 import sys
 import time
-import urllib
+import urllib.request
 import os
 
 from asydo import *
@@ -41,7 +41,7 @@ complete = False
 if (len(sys.argv)==1):
 
     log.write("No source was defined for the Line Database, so the Default Line Database will be imported: \n\tDownloading Default Line CSV \n")
-    urllib.urlretrieve(default_url,default_csv_name , reporthook)
+    urllib.request.urlretrieve(default_url,default_csv_name , reporthook)
     URI = default_csv_name
     log.write("\n\tDefault Line CSV was Downloaded\n")
     csv = True
