@@ -1,6 +1,6 @@
 ﻿
 
-# ASYDO (Astronomical Syntetic Data Observations) #
+# ASYDO (Astronomical SYntetic Data Observations) #
 
 The objective of this project is to generate synthetic cubes of spectral data, similar to those that ALMA generates.
 
@@ -47,20 +47,17 @@ Currenty whe have the following installation methods:
 
     TODO
 
-### Dependencies ###
-
- * scipy
- * numpy
- * matplotlib
- * astropy
- * pysqlite (python 2)
+This will also install a `dbCreator.py` script that we will use in the next step.
 
 ### Database ###
 
-To create the database, go to /src/db and run dbCreator.py. By default, it will download a .csv from our server, and import it to a SQLITE database.
-If you want to import your spectral lines, we currently support 2 ways of doing this:
-  * *By Custom .CSV*: To use this option, you must run dbCreator.py with the flag "-C", followed by the path to your .CSV
-  * *By Query to a SLAP service*: To use this option, you must run dbCreator.py with the flag "-T", followed by the URL to the service.
+To create the database, run `dbCreator.py` in your terminal. By default, this it will download a .csv from our server, and import it to a SQLITE database.
 
-By default, the script will download the lines in range from 88 Ghz to 720 Ghz (the ALMA spectral Band)
-If you want to use a custom range you must add to the previous instruction the flag "-R", followed by you custom range in the format "minimal\_frequency:maximum\_frequency"
+If you want to import your spectral lines, we currently support 2 ways of doing this:
+  * By Custom `file.csv`: To use this option, you must run `dbCreator.py -C /path/to/file.csv`
+
+  * By Query to a `SLAP` service: To use this option, you must run `dbCreator.py -T [ServiceURL]`
+
+By default, the script will download the lines in range from **88 Ghz to 720 Ghz** (the ALMA spectral Band)
+
+If you want to use a custom range you must add to the previous instruction: ` -R minfreq:maxfreq`
