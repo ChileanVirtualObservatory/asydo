@@ -1,3 +1,7 @@
-dist/
 build/
+dist/
+*.sqlite
+*.csv
+*.fits
 asydo.egg-info/
+__pycache__/
