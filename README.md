@@ -2,6 +2,11 @@
 
 # ASYDO (Astronomical Synthetic Data Observations) #
 
+
+<p align="center">
+<img src="https://www.chivo.cl/media/service-images/ASYDO.png" width="500">
+</p>
+
 The objective of this project is to generate synthetic cubes of spectral data, similar to those that ALMA generates.
 
 Authors:
